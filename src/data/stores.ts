@@ -1,93 +1,116 @@
+// Updated store data with real information from spreadsheet
 export interface StoreData {
-  id: number;
-  lat: number;
-  lng: number;
-  sales: number;
-  customers: number;
-  digitalAudience: number;
-  region: 'West' | 'East' | 'Central';
-  trend: number;
+  url: string;
+  city: string;
+  name: string;
+  index: number;
+  state: string;
+  country: string;
+  reviews: number;
+  latitude: number;
+  negative: number;
+  positive: number;
+  zip_code: number;
+  longitude: number;
+  total_sales: number;
+  phone_number_1: string;
+  poblacion_10km: number;
+  street_address: string;
+  campoverde_sales: number;
+  digital_audience: number;
+  digital_audience_twitter: number;
+  digital_audience_facebook: number;
+  digital_audience_linkedin: number;
+  digital_audience_instagram: number;
 }
 
+// Example store data
 export const STORE_DATA: StoreData[] = [
   {
-    id: 1001,
-    lat: 34.0522,
-    lng: -118.2437,
-    sales: 3100000,
-    customers: 18500,
-    digitalAudience: 45000,
-    region: 'West',
-    trend: 12.5
+    url: "https://www.walmart.com/store/890/orlando-fl/details",
+    city: "Orlando",
+    name: "Orlando Supercenter",
+    index: 854,
+    state: "FL",
+    country: "US",
+    reviews: 780,
+    latitude: 28.5659,
+    negative: 212,
+    positive: 568,
+    zip_code: 32817,
+    longitude: -81.217771,
+    total_sales: 3177950,
+    phone_number_1: "407-281-8941",
+    poblacion_10km: 147475,
+    street_address: "11250 E Colonial Dr",
+    campoverde_sales: 23428074,
+    digital_audience: 112741,
+    digital_audience_twitter: 33919,
+    digital_audience_facebook: 56630,
+    digital_audience_linkedin: 41293,
+    digital_audience_instagram: 37754
   },
   {
-    id: 1002,
-    lat: 40.7128,
-    lng: -74.0060,
-    sales: 2800000,
-    customers: 16800,
-    digitalAudience: 38000,
-    region: 'East',
-    trend: 8.3
+    url: "https://www.walmart.com/store/891/miami-fl/details",
+    city: "Miami",
+    name: "Miami Downtown",
+    index: 855,
+    state: "FL",
+    country: "US",
+    reviews: 650,
+    latitude: 25.7617,
+    negative: 180,
+    positive: 470,
+    zip_code: 33131,
+    longitude: -80.1918,
+    total_sales: 4215680,
+    phone_number_1: "305-358-7940",
+    poblacion_10km: 198650,
+    street_address: "1601 Biscayne Blvd",
+    campoverde_sales: 28945610,
+    digital_audience: 134890,
+    digital_audience_twitter: 40467,
+    digital_audience_facebook: 67445,
+    digital_audience_linkedin: 49308,
+    digital_audience_instagram: 45023
   },
   {
-    id: 1003,
-    lat: 41.8781,
-    lng: -87.6298,
-    sales: 2500000,
-    customers: 15000,
-    digitalAudience: 32000,
-    region: 'Central',
-    trend: -2.1
-  },
-  {
-    id: 1004,
-    lat: 29.7604,
-    lng: -95.3698,
-    sales: 2900000,
-    customers: 17200,
-    digitalAudience: 41000,
-    region: 'Central',
-    trend: 15.7
-  },
-  {
-    id: 1005,
-    lat: 33.7490,
-    lng: -84.3880,
-    sales: 2600000,
-    customers: 15500,
-    digitalAudience: 35000,
-    region: 'East',
-    trend: 5.2
-  },
-  {
-    id: 1006,
-    lat: 39.9526,
-    lng: -75.1652,
-    sales: 2700000,
-    customers: 16000,
-    digitalAudience: 37000,
-    region: 'East',
-    trend: -1.8
-  },
-  {
-    id: 1007,
-    lat: 47.6062,
-    lng: -122.3321,
-    sales: 2400000,
-    customers: 14300,
-    digitalAudience: 31000,
-    region: 'West',
-    trend: 9.4
-  },
-  {
-    id: 1008,
-    lat: 36.1699,
-    lng: -115.1398,
-    sales: 2200000,
-    customers: 13100,
-    digitalAudience: 28000,
-    region: 'West',
-    trend: 6.8
+    url: "https://www.walmart.com/store/892/atlanta-ga/details",
+    city: "Atlanta",
+    name: "Atlanta Midtown",
+    index: 856,
+    state: "GA",
+    country: "US",
+    reviews: 820,
+    latitude: 33.7490,
+    negative: 246,
+    positive: 574,
+    zip_code: 30308,
+    longitude: -84.3880,
+    total_sales: 3890420,
+    phone_number_1: "404-892-5252",
+    poblacion_10km: 178340,
+    street_address: "725 Ponce De Leon Ave NE",
+    campoverde_sales: 25987430,
+    digital_audience: 128760,
+    digital_audience_twitter: 38628,
+    digital_audience_facebook: 64380,
+    digital_audience_linkedin: 47041,
+    digital_audience_instagram: 42987
   }
 ];
+
+// Calculate total social media reach
+export const getTotalSocialMedia = () => {
+  return STORE_DATA.reduce((acc, store) => ({
+    facebook: acc.facebook + store.digital_audience_facebook,
+    instagram: acc.instagram + store.digital_audience_instagram,
+    twitter: acc.twitter + store.digital_audience_twitter,
+    linkedin: acc.linkedin + store.digital_audience_linkedin
+  }), {
+    facebook: 0,
+    instagram: 0,
+    twitter: 0,
+    linkedin: 0
+  });
+};

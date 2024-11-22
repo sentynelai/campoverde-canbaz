@@ -1,60 +1,77 @@
-import React from 'react';
-import { Layout } from './components/Layout';
+import React, { useState } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { Header } from './components/Header';
 import { Map } from './components/Map';
-import { MetricsOverlay } from './components/MetricsOverlay';
+import { AudienceMetrics } from './components/AudienceMetrics';
+import { SocialFooter } from './components/SocialFooter';
+import { LoadingScreen } from './components/LoadingScreen';
 import { ChatAssistant } from './components/ChatAssistant';
-import { BottomMetrics } from './components/BottomMetrics';
-import { Logo } from './components/Logo';
+import { ProductPerformance } from './components/ProductPerformance';
+import { AudienceKPIs } from './components/AudienceKPIs';
+import { AnimatePresence } from 'framer-motion';
+import { useStoreSelection } from './hooks/useStoreSelection';
+import { useStoreData } from './hooks/useStoreData';
+import { LoginPage } from './components/LoginPage';
+import { LoadingOverlay } from './components/LoadingOverlay';
 
 function App() {
-  return (
-    <div className="min-h-screen bg-dark-950 relative overflow-hidden">
-      {/* Map Background */}
-      <div className="fixed inset-0 z-0">
-        <Map />
-      </div>
+  const { isLoading, isError } = useStoreData();
+  const { selectedStore, isLoadingStore } = useStoreSelection();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-      {/* Content Overlay */}
-      <div className="relative z-10 min-h-screen">
-        {/* Header */}
-        <header className="fixed top-0 left-0 right-0 px-4 md:px-6 py-4 bg-gradient-to-b from-dark-950/80 to-transparent">
-          <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <Logo />
-            <h1 className="text-xl md:text-2xl font-bold text-[#00FF9C] opacity-80 hover:opacity-100 transition-opacity">
-              Welcome to Campoverde's Canbaz
-            </h1>
-          </div>
-        </header>
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+  }
 
-        {/* Main Content */}
-        <div className="pt-32 md:pt-36 px-4 md:px-6 pb-24">
-          <div className="container mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
-              {/* Left Column */}
-              <div className="md:col-span-3 space-y-4">
-                <MetricsOverlay position="left" />
-              </div>
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
-              {/* Center Column - Empty for map visibility */}
-              <div className="hidden md:block md:col-span-6" />
-
-              {/* Right Column */}
-              <div className="md:col-span-3 space-y-4">
-                <MetricsOverlay position="right" />
-              </div>
-            </div>
-
-            {/* Bottom Metrics */}
-            <div className="mt-4 md:mt-6">
-              <BottomMetrics />
-            </div>
-          </div>
+  if (isError) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-dark-950">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Error Loading Data</h1>
+          <p className="text-dark-400">Please try refreshing the page.</p>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <div className="h-screen bg-dark-950 relative overflow-hidden">
+        {/* Fixed Header */}
+        <Header />
+        
+        {/* Background Map */}
+        <div className="fixed inset-0 z-0">
+          <Map />
+        </div>
+
+        {/* Loading Overlay */}
+        <AnimatePresence>
+          {isLoadingStore && <LoadingOverlay />}
+        </AnimatePresence>
+
+        {/* Store Information */}
+        <AnimatePresence>
+          {selectedStore && (
+            <>
+              <AudienceMetrics key={`metrics-${selectedStore.id}`} />
+              <ProductPerformance key={`products-${selectedStore.id}`} />
+              <AudienceKPIs key={`audience-${selectedStore.id}`} />
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Social Footer */}
+        <SocialFooter />
 
         {/* Chat Assistant */}
         <ChatAssistant />
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 

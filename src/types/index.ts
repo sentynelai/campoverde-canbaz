@@ -1,15 +1,35 @@
 export interface StoreData {
   id: number;
-  lat: number;
-  lng: number;
+  name: string;
+  city: string;
+  state: string;
+  latitude: number;
+  longitude: number;
   sales: number;
   customers: number;
+  reviews: number;
+  positive: number;
+  negative: number;
   digitalAudience: number;
-  region: 'West' | 'East' | 'Central';
+  trend: number;
+  socialMedia: {
+    facebook: number;
+    instagram: number;
+    twitter: number;
+    tiktok: number;
+  };
+  [key: string]: any;
+}
+
+export interface ProductKPI {
+  id: string;
+  name: string;
+  current: number;
+  target: number;
 }
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
-  timestamp: string;
+  timestamp: Date;
 }
