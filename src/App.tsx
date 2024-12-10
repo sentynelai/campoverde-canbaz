@@ -7,8 +7,9 @@ import { SocialFooter } from './components/SocialFooter';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ChatAssistant } from './components/ChatAssistant';
 import { ProductPerformance } from './components/ProductPerformance';
+import { BusinessPerformance } from './components/BusinessPerformance';
 import { AudienceKPIs } from './components/AudienceKPIs';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useStoreSelection } from './hooks/useStoreSelection';
 import { useStoreData } from './hooks/useStoreData';
 import { LoginPage } from './components/LoginPage';
@@ -16,7 +17,7 @@ import { LoadingOverlay } from './components/LoadingOverlay';
 
 function App() {
   const { isLoading, isError } = useStoreData();
-  const { selectedStore, isLoadingStore } = useStoreSelection();
+  const { selectedStore, isLoadingStore, setSelectedStore } = useStoreSelection();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   if (!isAuthenticated) {
@@ -54,13 +55,35 @@ function App() {
           {isLoadingStore && <LoadingOverlay />}
         </AnimatePresence>
 
-        {/* Store Information */}
+        {/* Store Information Overlay and Modals */}
         <AnimatePresence>
           {selectedStore && (
             <>
-              <AudienceMetrics key={`metrics-${selectedStore.id}`} />
-              <ProductPerformance key={`products-${selectedStore.id}`} />
-              <AudienceKPIs key={`audience-${selectedStore.id}`} />
+              {/* Dark overlay */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-dark-950/50 backdrop-blur-sm z-[5]"
+                onClick={() => setSelectedStore(null)}
+              />
+              
+              {/* Modals Container */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed top-24 left-0 right-0 z-10"
+              >
+                <div className="px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-dark-700 scrollbar-track-dark-900">
+                  <div className="flex gap-4 pb-4 min-w-max">
+                    <AudienceMetrics key={`metrics-${selectedStore.id}`} />
+                    <ProductPerformance key={`products-${selectedStore.id}`} />
+                    <BusinessPerformance key={`business-${selectedStore.id}`} />
+                    <AudienceKPIs key={`audience-${selectedStore.id}`} />
+                  </div>
+                </div>
+              </motion.div>
             </>
           )}
         </AnimatePresence>

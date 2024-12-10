@@ -6,6 +6,8 @@ export interface StoreData {
   latitude: number;
   longitude: number;
   sales: number;
+  campoverde_sales: number;
+  velocity_ly: number;
   customers: number;
   reviews: number;
   positive: number;

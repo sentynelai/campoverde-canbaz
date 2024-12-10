@@ -4,24 +4,29 @@ import { useStoreData } from '../hooks/useStoreData';
 import { MapError } from './MapError';
 import { loadGoogleMaps } from '../lib/maps';
 import { MAPS_CONFIG } from '../lib/maps';
+import { REGIONS } from '../lib/regions';
+import { RegionModal } from './RegionModal';
 import type { StoreData } from '../types';
+import type { RegionData } from '../lib/regions';
+import { AnimatePresence } from 'framer-motion';
 
 const BATCH_SIZE = 500;
-const BATCH_DELAY = 100; // ms between batches
-const MIN_ZOOM_FOR_MARKERS = 6; // Minimum zoom level to show markers
+const BATCH_DELAY = 100;
+const MIN_ZOOM_FOR_MARKERS = 9;
+const MAX_ZOOM_FOR_REGIONS = 8;
 
 export const Map: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
-  const [markerData, setMarkerData] = useState<{ [key: number]: google.maps.Marker }>({});
-  const [error, setError] = useState<string>('');
-  const { stores } = useStoreData();
+  const clickTimeoutRef = useRef<NodeJS.Timeout>();
+  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
+  const [currentZoom, setCurrentZoom] = useState(MAPS_CONFIG.defaultZoom);
+  const [markerData, setMarkerData] = useState<Record<number, google.maps.Marker>>({});
+  const [selectedRegion, setSelectedRegion] = useState<RegionData | null>(null);
+  const [regionPolygons, setRegionPolygons] = useState<Record<string, google.maps.Polygon>>({});
+  const [error, setError] = useState<string | null>(null);
+  
   const { selectedStore, setSelectedStore } = useStoreSelection();
-  const [visibleMarkers, setVisibleMarkers] = useState<Set<number>>(new Set());
-  const batchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [currentZoom, setCurrentZoom] = useState<number>(MAPS_CONFIG.defaultZoom);
+  const { stores, isLoading } = useStoreData();
 
   const createMarker = useMemo(() => (store: StoreData, map: google.maps.Map) => {
     if (markerData[store.index]) {
@@ -30,11 +35,6 @@ export const Map: React.FC = () => {
       return existingMarker;
     }
 
-    const isEastRegion = store.state === 'FL' || store.state === 'GA' || store.state === 'SC' || 
-                        store.state === 'NC' || store.state === 'VA' || store.state === 'MD' || 
-                        store.state === 'DE' || store.state === 'NJ' || store.state === 'NY' || 
-                        store.state === 'CT' || store.state === 'RI' || store.state === 'MA' || 
-                        store.state === 'NH' || store.state === 'VT' || store.state === 'ME';
     const isSelected = selectedStore?.index === store.index;
 
     const marker = new google.maps.Marker({
@@ -42,36 +42,51 @@ export const Map: React.FC = () => {
       map,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: isSelected ? 4 : 2,
+        scale: isSelected ? 10 : 8,
         fillColor: '#00FF9C',
-        fillOpacity: isSelected ? 0.9 : 0.4,
-        strokeWeight: isEastRegion ? 0.8 : 0.3,
-        strokeColor: isEastRegion ? '#ffffff' : '#00FF9C',
-        strokeOpacity: isEastRegion ? 0.9 : 0.6
+        fillOpacity: isSelected ? 0.9 : 0.7,
+        strokeWeight: 2.5,
+        strokeColor: '#ffffff',
+        strokeOpacity: 0.9
       },
       optimized: true,
       clickable: true,
-      zIndex: isSelected ? 2 : 1
+      zIndex: isSelected ? 2 : 1,
+      title: `${store.name} - ${store.city}, ${store.state}`
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: `
+        <div class="p-3">
+          <div class="font-semibold text-lg mb-1">${store.name}</div>
+          <div class="text-sm mb-1">${store.street_address}</div>
+          <div class="text-sm">${store.city}, ${store.state} ${store.zip_code}</div>
+          <div class="text-sm mt-2 font-medium">Sales: $${(store.sales/1000000).toFixed(1)}M</div>
+        </div>
+      `,
+      pixelOffset: new google.maps.Size(0, -5)
     });
 
     marker.addListener('mouseover', () => {
       marker.setIcon({
         ...marker.getIcon(),
         fillOpacity: 0.9,
-        scale: 3,
+        scale: 12,
         zIndex: 3
       });
+      infoWindow.open(map, marker);
     });
 
     marker.addListener('mouseout', () => {
       if (selectedStore?.index !== store.index) {
         marker.setIcon({
           ...marker.getIcon(),
-          fillOpacity: 0.4,
-          scale: 2,
+          fillOpacity: 0.7,
+          scale: 8,
           zIndex: 1
         });
       }
+      infoWindow.close();
     });
 
     marker.addListener('click', () => {
@@ -82,6 +97,7 @@ export const Map: React.FC = () => {
       clickTimeoutRef.current = setTimeout(async () => {
         setSelectedStore(store);
         map.panTo({ lat: store.latitude, lng: store.longitude });
+        map.setZoom(16);
       }, 100);
     });
 
@@ -89,130 +105,118 @@ export const Map: React.FC = () => {
     return marker;
   }, [selectedStore, setSelectedStore, markerData]);
 
-  const loadMarkerBatch = (
-    visibleStores: typeof stores,
-    startIndex: number,
-    map: google.maps.Map
-  ) => {
-    if (!map || startIndex >= visibleStores.length) return;
-
-    const endIndex = Math.min(startIndex + BATCH_SIZE, visibleStores.length);
-    const batch = visibleStores.slice(startIndex, endIndex);
-
-    const newMarkers = batch.map(store => createMarker(store, map));
-    markersRef.current.push(...newMarkers);
-
-    if (endIndex < visibleStores.length) {
-      batchTimeoutRef.current = setTimeout(() => {
-        loadMarkerBatch(visibleStores, endIndex, map);
-      }, BATCH_DELAY);
-    }
-  };
-
-  const updateVisibleMarkers = () => {
-    if (!mapInstanceRef.current) return;
-
-    const bounds = mapInstanceRef.current.getBounds();
-    if (!bounds) return;
-
-    const zoom = mapInstanceRef.current.getZoom();
-    setCurrentZoom(zoom || MAPS_CONFIG.defaultZoom);
-    const newVisibleMarkers = new Set<number>();
-    
-    if (zoom && zoom >= MIN_ZOOM_FOR_MARKERS) {
-      const visibleStores = stores.filter(store => {
-        const latLng = new google.maps.LatLng(store.latitude, store.longitude);
-        const isVisible = bounds.contains(latLng);
-        if (isVisible) {
-          newVisibleMarkers.add(store.index);
-        }
-        return isVisible;
-      });
-
-      // Hide all markers first
-      Object.values(markerData).forEach(marker => marker.setMap(null));
-
-      // Clear any pending batch loading
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-      }
-
-      // Start loading markers in batches
-      loadMarkerBatch(visibleStores, 0, mapInstanceRef.current);
-    } else {
-      // Hide all markers if zoom level is too low
-      Object.values(markerData).forEach(marker => marker.setMap(null));
-    }
-
-    setVisibleMarkers(newVisibleMarkers);
-  };
-
   useEffect(() => {
-    const initMap = async () => {
-      if (!MAPS_CONFIG.apiKey) {
-        setError('Google Maps API key is missing');
-        return;
-      }
+    let mounted = true;
 
+    const initializeMap = async () => {
       try {
+        if (!mapRef.current) return;
+
         const google = await loadGoogleMaps();
-        
-        if (mapRef.current) {
-          const map = new google.maps.Map(mapRef.current, {
-            center: MAPS_CONFIG.defaultCenter,
-            zoom: MAPS_CONFIG.defaultZoom,
-            styles: MAPS_CONFIG.styles,
-            disableDefaultUI: false,
-            zoomControl: true,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: false,
-            maxZoom: 12,
-            minZoom: 3,
+        const map = new google.maps.Map(mapRef.current, {
+          ...MAPS_CONFIG,
+          center: MAPS_CONFIG.defaultCenter,
+          zoom: MAPS_CONFIG.defaultZoom,
+          styles: MAPS_CONFIG.styles,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false
+        });
+
+        if (!mounted) return;
+        setMapInstance(map);
+
+        // Initialize region polygons
+        Object.entries(REGIONS).forEach(([regionKey, regionData]) => {
+          const bounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(regionData.bounds.south, regionData.bounds.west),
+            new google.maps.LatLng(regionData.bounds.north, regionData.bounds.east)
+          );
+
+          const polygon = new google.maps.Polygon({
+            paths: [
+              { lat: regionData.bounds.north, lng: regionData.bounds.west },
+              { lat: regionData.bounds.north, lng: regionData.bounds.east },
+              { lat: regionData.bounds.south, lng: regionData.bounds.east },
+              { lat: regionData.bounds.south, lng: regionData.bounds.west }
+            ],
+            strokeColor: '#00FF9C',
+            strokeOpacity: 0.3,
+            strokeWeight: 2,
+            fillColor: '#00FF9C',
+            fillOpacity: 0.1,
+            map
           });
 
-          mapInstanceRef.current = map;
-
-          // Add bounds change listener with debounce
-          let boundsChangeTimeout: NodeJS.Timeout;
-          map.addListener('bounds_changed', () => {
-            clearTimeout(boundsChangeTimeout);
-            boundsChangeTimeout = setTimeout(() => {
-              requestAnimationFrame(updateVisibleMarkers);
-            }, 100);
+          polygon.addListener('click', () => {
+            setSelectedRegion(regionData);
+            map.fitBounds(bounds);
           });
 
-          // Initial markers update
-          updateVisibleMarkers();
-        }
+          polygon.addListener('mouseover', () => {
+            polygon.setOptions({
+              fillOpacity: 0.2,
+              strokeOpacity: 0.5
+            });
+          });
+
+          polygon.addListener('mouseout', () => {
+            polygon.setOptions({
+              fillOpacity: 0.1,
+              strokeOpacity: 0.3
+            });
+          });
+
+          setRegionPolygons(prev => ({
+            ...prev,
+            [regionKey]: polygon
+          }));
+        });
+
+        map.addListener('zoom_changed', () => {
+          const zoom = map.getZoom();
+          if (zoom) {
+            setCurrentZoom(zoom);
+            
+            // Toggle region polygons visibility
+            Object.values(regionPolygons).forEach(polygon => {
+              polygon.setVisible(zoom <= MAX_ZOOM_FOR_REGIONS);
+            });
+
+            // Toggle markers visibility
+            Object.values(markerData).forEach(marker => {
+              marker.setVisible(zoom >= MIN_ZOOM_FOR_MARKERS);
+            });
+          }
+        });
+
       } catch (err) {
-        setError('Failed to load Google Maps');
-        console.error(err);
+        console.error('Error initializing map:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load map');
       }
     };
 
-    initMap();
-
-    // Cleanup function
+    initializeMap();
     return () => {
-      if (batchTimeoutRef.current) {
-        clearTimeout(batchTimeoutRef.current);
-      }
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
-      Object.values(markerData).forEach(marker => marker.setMap(null));
-      setMarkerData({});
-      markersRef.current = [];
+      mounted = false;
     };
   }, []);
 
-  // Update markers when stores or selected store changes
   useEffect(() => {
-    if (mapInstanceRef.current) {
-      updateVisibleMarkers();
-    }
-  }, [stores, selectedStore]);
+    if (!mapInstance || !stores.length || currentZoom < MIN_ZOOM_FOR_MARKERS) return;
+
+    const showMarkers = async () => {
+      for (let i = 0; i < stores.length; i += BATCH_SIZE) {
+        const batch = stores.slice(i, i + BATCH_SIZE);
+        batch.forEach(store => createMarker(store, mapInstance));
+        if (i + BATCH_SIZE < stores.length) {
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+        }
+      }
+    };
+
+    showMarkers();
+  }, [mapInstance, stores, currentZoom, createMarker]);
 
   if (error) {
     return <MapError message={error} />;
@@ -223,9 +227,17 @@ export const Map: React.FC = () => {
       <div ref={mapRef} className="w-full h-full opacity-90" />
       {currentZoom < MIN_ZOOM_FOR_MARKERS && (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dark-950/90 backdrop-blur-sm px-6 py-3 rounded-lg border border-dark-800/50 text-sm">
-          Zoom in to load map markers
+          Zoom in closer to see store locations
         </div>
       )}
+      <AnimatePresence>
+        {selectedRegion && (
+          <RegionModal
+            stats={selectedRegion}
+            onClose={() => setSelectedRegion(null)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

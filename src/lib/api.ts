@@ -56,12 +56,12 @@ export async function fetchStoreData(): Promise<{ data: StoreData[]; error?: str
     const stores: StoreData[] = storesData
       .filter(store => validateCoordinates(parseFloat(store.latitude), parseFloat(store.longitude)))
       .map(store => ({
-        //id: parseInt(store.store_id),
         id: parseInt(store['Store Number']) || 0,
         name: store.name || `Store ${store.store_id}`,
         latitude: parseFloat(store.latitude),
         longitude: parseFloat(store.longitude),
         sales: parseFloat(store.total_sales) || 0,
+        campoverde_sales: parseFloat(store.campoverde_sales) || 0,
         customers: parseInt(store.customers) || 0,
         region: store.region || 'Unknown',
         trend: parseFloat(store.trend) || 0,

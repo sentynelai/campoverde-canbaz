@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Heart, Dumbbell, Coffee, Leaf, Sun, X } from 'lucide-react';
 import { useStoreSelection } from '../hooks/useStoreSelection';
 
@@ -68,11 +68,11 @@ export const AudienceMap: React.FC<Props> = ({ onClose }) => {
         onClick={onClose}
       />
       <motion.div
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+        initial={{ opacity: 0, x: -20, y: -20 }}
+        animate={{ opacity: 1, x: 0, y: 0 }}
+        exit={{ opacity: 0, x: -20, y: -20 }}
         transition={{ type: "spring", duration: 0.5 }}
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-2xl bg-dark-950/90 backdrop-blur-lg rounded-xl border border-dark-800/50 p-6 z-50"
+        className="fixed left-4 top-24 w-[calc(100%-2rem)] md:w-[600px] bg-dark-950/90 backdrop-blur-lg rounded-xl border border-dark-800/50 p-6 z-50"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">

@@ -24,7 +24,7 @@ export const StoreModal: React.FC<StoreModalProps> = ({ store, onClose }) => {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="fixed right-4 top-24 w-[calc(100%-2rem)] md:w-96 bg-dark-950/90 rounded-xl border border-dark-800/50 p-6 z-[60]"
+        className="min-w-[384px] bg-dark-950/90 backdrop-blur-lg rounded-xl border border-dark-800/50 p-4 max-h-[calc(100vh-200px)] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
