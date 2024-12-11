@@ -1,38 +1,43 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Package, X, Leaf, Zap, Coffee, Heart, Apple, Dumbbell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
-import { ProductQuantityMetrics } from './ProductQuantityMetrics';
 
 const PRODUCT_COLUMNS = [
   {
     id: 'CV ENERGY BOOST Sales',
+    name: 'CV ENERGY BOOST',
     icon: Zap,
     color: '#00FF9C'
   },
   {
     id: 'CV EXOTIC INDULGENCE Sales',
+    name: 'CV EXOTIC INDULGENCE',
     icon: Apple,
     color: '#F59E0B'
   },
   {
     id: 'CV ACAI ENERGIZE PWR Sales',
+    name: 'CV ACAI ENERGIZE PWR',
     icon: Coffee,
     color: '#3B82F6'
   },
   {
     id: 'CV PASSION BLISS Sales',
+    name: 'CV PASSION BLISS',
     icon: Heart,
     color: '#EC4899'
   },
   {
     id: 'CV FIT & WELLNESS Sales',
+    name: 'CV FIT & WELLNESS',
     icon: Dumbbell,
     color: '#8B5CF6'
   },
   {
     id: 'CV CHIA SUPREMACY Sales',
+    name: 'CV CHIA SUPREMACY',
     icon: Leaf,
     color: '#10B981'
   }
@@ -42,13 +47,22 @@ export const StoreProductsModal: React.FC = () => {
   const { allStores } = useStoreData();
   const { setIsVisible } = useSummaryModals();
 
-  const productTotals = PRODUCT_COLUMNS.reduce((acc, { id }) => {
-    const total = allStores.reduce((sum, store) => sum + (store[id] || 0), 0);
+  const { productTotals, totalSales } = useMemo(() => {
+    const totals = PRODUCT_COLUMNS.reduce((acc, { id }) => {
+      const total = allStores.reduce((sum, store) => sum + (store[id] || 0), 0);
+      return {
+        ...acc,
+        [id]: total
+      };
+    }, {} as Record<string, number>);
+
+    const total = Object.values(totals).reduce((sum, value) => sum + value, 0);
+
     return {
-      ...acc,
-      [id]: total
+      productTotals: totals,
+      totalSales: total
     };
-  }, {});
+  }, [allStores]);
 
   return (
     <motion.div
@@ -69,31 +83,84 @@ export const StoreProductsModal: React.FC = () => {
         </button>
       </div>
 
-      <div className="space-y-4">
-        {PRODUCT_COLUMNS.map(({ id, icon: Icon, color }, index) => (
-          <motion.div
-            key={id}
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ delay: index * 0.1 }}
-            className="p-4 bg-dark-800/30 rounded-lg"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20` }}>
-                  <Icon className="w-4 h-4" style={{ color }} />
-                </div>
-                <span className="text-dark-200">{id.replace(' Sales', '')}</span>
-              </div>
-              <span className="font-medium">
-                ${(productTotals[id]).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-              </span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      <div className="space-y-6">
+        {PRODUCT_COLUMNS.map((product, index) => {
+          const Icon = product.icon;
+          const value = productTotals[product.id];
+          const salesMix = ((value / totalSales) * 100).toFixed(2);
 
-      <ProductQuantityMetrics />
+          return (
+            <div key={product.id} className="space-y-4">
+              {/* Main Product Info */}
+              <div className="p-4 bg-dark-800/30 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${product.color}20` }}>
+                      <Icon className="w-4 h-4" style={{ color: product.color }} />
+                    </div>
+                    <span className="text-dark-200">{product.name}</span>
+                  </div>
+                  <span className="font-medium">${(value / 1000000).toFixed(2)}M</span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-dark-400">Progress</span>
+                    <span className="text-[#00FF9C]">80%</span>
+                  </div>
+                  <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: '80%' }}
+                      transition={{ duration: 1, ease: "easeOut" }}
+                      className="h-full bg-[#00FF9C] rounded-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Metrics */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-dark-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-dark-400">Sales growth</span>
+                    <span className="text-xs font-medium">+15.3%*</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-dark-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-dark-400">Sales mix</span>
+                    <span className="text-xs font-medium">{salesMix}%*</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-dark-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-dark-400">$ASW</span>
+                    <span className="text-xs font-medium">52.80*</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-dark-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-dark-400">$ASW past year</span>
+                    <span className="text-xs font-medium">48.65*</span>
+                  </div>
+                </div>
+
+                <div className="col-span-2 p-3 bg-dark-800/20 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-dark-400">$ASW growth</span>
+                    <span className="text-xs font-medium">+8.5%*</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </motion.div>
   );
 };
