@@ -20,12 +20,6 @@ export const BusinessPerformance: React.FC = () => {
       value: `${selectedStore.velocity_ly || 0}%`,
       icon: TrendingUp,
       color: 'blue-400'
-    },
-    {
-      label: 'Filling Rate',
-      value: '0%',
-      icon: BarChart,
-      color: 'purple-400'
     }
   ];
 
