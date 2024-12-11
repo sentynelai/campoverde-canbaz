@@ -100,7 +100,7 @@ export const StoreProductsModal: React.FC = () => {
                     </div>
                     <span className="text-dark-200">{product.name}</span>
                   </div>
-                  <span className="font-medium">${(value / 1000000).toFixed(2)}M</span>
+                  <span className="font-medium">${(value / 1000).toFixed(2)}k</span>
                 </div>
 
                 {/* Progress Bar */}
@@ -139,7 +139,7 @@ export const StoreProductsModal: React.FC = () => {
                 <div className="p-3 bg-dark-800/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-dark-400">$ASW</span>
-                    <span className="text-xs font-medium">52.80*</span>
+                    <span className="text-xs font-medium">{((value) / 3010 / 52).toFixed(4)}</span>
                   </div>
                 </div>
 

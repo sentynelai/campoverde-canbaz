@@ -42,7 +42,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({
             </div>
             <span className="text-dark-200">{name}</span>
           </div>
-          <span className="font-medium">${(value / 1000).toFixed(2)}K</span>
+          <span className="font-medium">${(value / 100).toFixed(2)}K</span>
         </div>
 
         <ProductProgress />
