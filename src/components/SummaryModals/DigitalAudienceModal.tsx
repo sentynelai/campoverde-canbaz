@@ -5,14 +5,34 @@ import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
 
 const SOCIAL_MEDIA_CONFIG = {
-  digital_audience_facebook: { icon: Facebook, color: '#1877F2', label: 'Facebook' },
-  digital_audience_instagram: { icon: Instagram, color: '#E4405F', label: 'Instagram' },
-  digital_audience_twitter: { icon: Twitter, color: '#1DA1F2', label: 'Twitter' },
-  digital_audience_linkedin: { icon: Linkedin, color: '#0A66C2', label: 'LinkedIn' }
+  digital_audience_facebook: { 
+    icon: Facebook, 
+    color: '#1877F2', 
+    label: 'Facebook',
+    bgColor: '#1877F220'
+  },
+  digital_audience_instagram: { 
+    icon: Instagram, 
+    color: '#E4405F', 
+    label: 'Instagram',
+    bgColor: '#E4405F20'
+  },
+  digital_audience_twitter: { 
+    icon: Twitter, 
+    color: '#1DA1F2', 
+    label: 'Twitter',
+    bgColor: '#1DA1F220'
+  },
+  digital_audience_linkedin: { 
+    icon: Linkedin, 
+    color: '#0A66C2', 
+    label: 'LinkedIn',
+    bgColor: '#0A66C220'
+  }
 };
 
 export const DigitalAudienceModal: React.FC = () => {
-  const { allStores } = useStoreData(); // Use allStores instead of stores
+  const { allStores } = useStoreData();
   const { setIsVisible } = useSummaryModals();
 
   const socialMediaTotals = Object.keys(SOCIAL_MEDIA_CONFIG).reduce((acc, platform) => {
@@ -69,7 +89,9 @@ export const DigitalAudienceModal: React.FC = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4" style={{ color: config.color }} />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: config.bgColor }}>
+                    <Icon className="w-4 h-4" style={{ color: config.color }} />
+                  </div>
                   <span className="text-dark-200">{config.label}</span>
                 </div>
                 <span className="font-medium">

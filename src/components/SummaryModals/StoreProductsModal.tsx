@@ -1,27 +1,51 @@
 import React from 'react';
-import { Package, X } from 'lucide-react';
+import { Package, X, Leaf, Zap, Coffee, Heart, Apple, Dumbbell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
 
 const PRODUCT_COLUMNS = [
-  'CV ENERGY BOOST Sales',
-  'CV EXOTIC INDULGENCE Sales',
-  'CV ACAI ENERGIZE PWR Sales',
-  'CV PASSION BLISS Sales',
-  'CV FIT & WELLNESS Sales',
-  'CV CHIA SUPREMACY Sales'
+  {
+    id: 'CV ENERGY BOOST Sales',
+    icon: Zap,
+    color: '#00FF9C'
+  },
+  {
+    id: 'CV EXOTIC INDULGENCE Sales',
+    icon: Apple,
+    color: '#F59E0B'
+  },
+  {
+    id: 'CV ACAI ENERGIZE PWR Sales',
+    icon: Coffee,
+    color: '#3B82F6'
+  },
+  {
+    id: 'CV PASSION BLISS Sales',
+    icon: Heart,
+    color: '#EC4899'
+  },
+  {
+    id: 'CV FIT & WELLNESS Sales',
+    icon: Dumbbell,
+    color: '#8B5CF6'
+  },
+  {
+    id: 'CV CHIA SUPREMACY Sales',
+    icon: Leaf,
+    color: '#10B981'
+  }
 ];
 
 export const StoreProductsModal: React.FC = () => {
-  const { allStores } = useStoreData(); // Use allStores instead of stores
+  const { allStores } = useStoreData();
   const { setIsVisible } = useSummaryModals();
 
-  const productTotals = PRODUCT_COLUMNS.reduce((acc, column) => {
-    const total = allStores.reduce((sum, store) => sum + (store[column] || 0), 0);
+  const productTotals = PRODUCT_COLUMNS.reduce((acc, { id }) => {
+    const total = allStores.reduce((sum, store) => sum + (store[id] || 0), 0);
     return {
       ...acc,
-      [column]: total
+      [id]: total
     };
   }, {});
 
@@ -45,18 +69,23 @@ export const StoreProductsModal: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {PRODUCT_COLUMNS.map((product, index) => (
+        {PRODUCT_COLUMNS.map(({ id, icon: Icon, color }, index) => (
           <motion.div
-            key={product}
+            key={id}
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: index * 0.1 }}
             className="p-4 bg-dark-800/30 rounded-lg"
           >
             <div className="flex items-center justify-between">
-              <span className="text-dark-200">{product.replace(' Sales', '')}</span>
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg" style={{ backgroundColor: `${color}20` }}>
+                  <Icon className="w-4 h-4" style={{ color }} />
+                </div>
+                <span className="text-dark-200">{id.replace(' Sales', '')}</span>
+              </div>
               <span className="font-medium">
-                ${(productTotals[product]).toFixed(1)}
+                ${(productTotals[id]).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
               </span>
             </div>
           </motion.div>

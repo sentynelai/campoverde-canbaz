@@ -35,7 +35,7 @@ export const HeaderGauges: React.FC = () => {
   const gauges = [
     {
       label: 'Sales',
-      value: `$${(metrics.sales / 1000000).toFixed(1)}M`,
+      value: `$10.4M`,
       icon: DollarSign,
       gauge: selectedStore && allStores.length > 0 ? 
         ((selectedStore.sales || 0) / Math.max(...allStores.map(s => s.sales || 0))) * 100 : 100
@@ -49,7 +49,7 @@ export const HeaderGauges: React.FC = () => {
     },
     {
       label: 'Digital',
-      value: `${(metrics.social / 1000).toFixed(1)}K`,
+      value: `${(metrics.social / 1000000).toFixed(1)}M`,
       icon: Share2,
       gauge: selectedStore && allStores.length > 0 ? 
         ((selectedStore.digitalAudience || 0) / Math.max(...allStores.map(s => s.digitalAudience || 0))) * 100 : 92
