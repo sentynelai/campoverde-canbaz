@@ -2,11 +2,14 @@ import React from 'react';
 import { Store, DollarSign, Users, ArrowRight, X } from 'lucide-react';
 import { useStoreSelection } from '../hooks/useStoreSelection';
 import { motion } from 'framer-motion';
+import { calculateTotalProductSales } from '../utils/salesCalculations';
 
 export const AudienceMetrics: React.FC = () => {
   const { selectedStore, setSelectedStore } = useStoreSelection();
 
   if (!selectedStore) return null;
+
+  const totalProductSales = calculateTotalProductSales(selectedStore);
 
   const metrics = [
     { 
@@ -106,7 +109,7 @@ export const AudienceMetrics: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-dark-400">FF Sales</span>
-            <span>$0</span>
+            <span>${totalProductSales.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-dark-400">Hispanic sales</span>
