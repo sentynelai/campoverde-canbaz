@@ -122,6 +122,7 @@ export const StoreProductsModal: React.FC = () => {
 
               {/* Additional Metrics */}
               <div className="grid grid-cols-2 gap-3">
+                {/*
                 <div className="p-3 bg-dark-800/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-dark-400">Sales growth</span>
@@ -135,14 +136,14 @@ export const StoreProductsModal: React.FC = () => {
                     <span className="text-xs font-medium">{salesMix}%*</span>
                   </div>
                 </div>
-
+*/}
                 <div className="p-3 bg-dark-800/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-dark-400">$ASW</span>
                     <span className="text-xs font-medium">{((value) / 3010 / 52).toFixed(4)}</span>
                   </div>
                 </div>
-
+{/*
                 <div className="p-3 bg-dark-800/20 rounded-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-dark-400">$ASW past year</span>
@@ -156,6 +157,7 @@ export const StoreProductsModal: React.FC = () => {
                     <span className="text-xs font-medium">+8.5%*</span>
                   </div>
                 </div>
+              */}
               </div>
             </div>
           );
