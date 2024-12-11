@@ -55,8 +55,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-center mb-2">Welcome Back</h2>
-            <p className="text-dark-400 text-center mb-8">Enter your password to access the dashboard</p>
+            <h2 className="text-2xl font-bold text-center mb-2">Welcome to Matosantos CANBAZ</h2>
+            <p className="text-dark-400 text-center mb-8">An analytics AI-centric platform that offers smart, transparent, and quick access to all relevant data</p>
 
             <form onSubmit={handleSubmit}>
               <motion.div

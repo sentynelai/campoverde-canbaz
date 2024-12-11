@@ -1,12 +1,13 @@
 import React from 'react';
 import { Logo } from './Logo';
 import { HeaderGauges } from './HeaderGauges';
-import { Users, RefreshCw } from 'lucide-react';
+import { Users, RefreshCw, Maximize } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudienceMap } from './AudienceMap';
 import { useStoreData } from '../hooks/useStoreData';
 import { LoadingTooltip } from './LoadingTooltip';
 import { ErrorModal } from './ErrorModal';
+import { useMapReset } from '../hooks/useMapReset';
 
 export const Header: React.FC = () => {
   const [showAudienceMap, setShowAudienceMap] = React.useState(false);
@@ -19,6 +20,7 @@ export const Header: React.FC = () => {
     showErrorModal,
     setShowErrorModal
   } = useStoreData();
+  const { resetMap } = useMapReset();
 
   const handleRefresh = async () => {
     await refreshData();
@@ -36,16 +38,27 @@ export const Header: React.FC = () => {
                 <span>Last update: {lastUpdate.toLocaleTimeString()}</span>
                 {(isLoading || isRefreshing) && <LoadingTooltip />}
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleRefresh}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-dark-800/50 hover:bg-dark-800 transition-colors disabled:opacity-50"
-                disabled={isRefreshing || isLoading}
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>Refresh DS</span>
-              </motion.button>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleRefresh}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-dark-800/50 hover:bg-dark-800 transition-colors disabled:opacity-50"
+                  disabled={isRefreshing || isLoading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <span>Refresh DS</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={resetMap}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-dark-800/50 hover:bg-dark-800 transition-colors"
+                >
+                  <Maximize className="w-4 h-4" />
+                  <span>Reset</span>
+                </motion.button>
+              </div>
             </div>
             <HeaderGauges />
             <button

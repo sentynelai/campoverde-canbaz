@@ -18,4 +18,3 @@ export const ProductProgress: React.FC = () => {
       </div>
     </div>
   );
-};

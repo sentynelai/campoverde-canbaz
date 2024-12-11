@@ -1,6 +1,14 @@
 import { Leaf, Zap, Coffee, Heart, Apple, Dumbbell } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-export const PRODUCT_COLUMNS = [
+interface ProductColumn {
+  id: string;
+  name: string;
+  icon: LucideIcon;
+  color: string;
+}
+
+export const PRODUCT_COLUMNS: ProductColumn[] = [
   {
     id: 'CV ENERGY BOOST Sales',
     name: 'CV ENERGY BOOST',
@@ -37,4 +45,4 @@ export const PRODUCT_COLUMNS = [
     icon: Leaf,
     color: '#10B981'
   }
-] as const;
+];

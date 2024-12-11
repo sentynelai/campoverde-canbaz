@@ -4,8 +4,8 @@ import { useStoreData } from '../hooks/useStoreData';
 import { MapError } from './MapError';
 import { loadGoogleMaps } from '../lib/maps';
 import { MAPS_CONFIG } from '../lib/maps';
+import { useMapReset } from '../hooks/useMapReset';
 import type { StoreData } from '../types';
-import { AnimatePresence } from 'framer-motion';
 
 const BATCH_SIZE = 500;
 const BATCH_DELAY = 100;
@@ -32,6 +32,7 @@ export const Map: React.FC = () => {
   
   const { selectedStore, setSelectedStore } = useStoreSelection();
   const { allStores, isLoading } = useStoreData();
+  const { setMapInstance: setGlobalMapInstance } = useMapReset();
 
   const createMarker = useMemo(() => (store: StoreData, map: google.maps.Map) => {
     if (markerData[store.index]) {
@@ -57,45 +58,10 @@ export const Map: React.FC = () => {
       },
       optimized: true,
       clickable: hasSales,
-      zIndex: isSelected ? 2 : hasSales ? 1 : 0,
-      title: hasSales ? `${store.name} - ${store.city}, ${store.state}` : undefined
+      zIndex: isSelected ? 2 : hasSales ? 1 : 0
     });
 
     if (hasSales) {
-      const infoWindow = new google.maps.InfoWindow({
-        content: `
-          <div class="p-3">
-            <div class="font-semibold text-lg mb-1">${store.name}</div>
-            <div class="text-sm mb-1">${store.street_address}</div>
-            <div class="text-sm">${store.city}, ${store.state} ${store.zip_code}</div>
-            <div class="text-sm mt-2 font-medium">Sales: $${(store.sales/1000000).toFixed(1)}M</div>
-          </div>
-        `,
-        pixelOffset: new google.maps.Size(0, -5)
-      });
-
-      marker.addListener('mouseover', () => {
-        marker.setIcon({
-          ...marker.getIcon(),
-          fillOpacity: 0.9,
-          scale: 12,
-          zIndex: 3
-        });
-        infoWindow.open(map, marker);
-      });
-
-      marker.addListener('mouseout', () => {
-        if (selectedStore?.index !== store.index) {
-          marker.setIcon({
-            ...marker.getIcon(),
-            fillOpacity: 0.7,
-            scale: 8,
-            zIndex: 1
-          });
-        }
-        infoWindow.close();
-      });
-
       marker.addListener('click', () => {
         if (clickTimeoutRef.current) {
           clearTimeout(clickTimeoutRef.current);
@@ -133,6 +99,7 @@ export const Map: React.FC = () => {
 
         if (!mounted) return;
         setMapInstance(map);
+        setGlobalMapInstance(map);
 
       } catch (err) {
         console.error('Error initializing map:', err);
@@ -144,7 +111,7 @@ export const Map: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [setGlobalMapInstance]);
 
   useEffect(() => {
     if (!mapInstance || !allStores.length) return;
