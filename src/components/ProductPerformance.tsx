@@ -90,7 +90,7 @@ export const ProductPerformance: React.FC = () => {
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-dark-200 flex-1 mr-2">{product.name}</span>
                   <span className={`${isOnTarget ? 'text-[#00FF9C]' : 'text-orange-400'} font-medium`}>
-                    ${sales}M
+                    ${sales.toFixed(0)}
                   </span>
                 </div>
                 
@@ -133,7 +133,7 @@ export const ProductPerformance: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dark-400">Revenue</span>
-                      <span>${sales}M</span>
+                      <span>${sales.toFixed(0)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dark-400">Weighted sales</span>
@@ -151,13 +151,13 @@ export const ProductPerformance: React.FC = () => {
             <div className="flex justify-between text-sm">
               <span className="text-dark-400">Total Revenue</span>
               <span className="text-[#00FF9C] font-medium">
-                ${totalRevenue}M
+                ${totalRevenue.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-dark-400">Target Revenue</span>
               <span className="text-dark-200 font-medium">
-                ${(totalTarget / 1000000).toFixed(2)}M
+                ${(totalTarget).toFixed(2)}
               </span>
             </div>
           </div>
