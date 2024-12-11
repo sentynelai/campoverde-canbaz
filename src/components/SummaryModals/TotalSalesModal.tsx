@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, X, Target, TrendingUp, Package2, Store, ArrowUpDown, Percent, Gauge, History } from 'lucide-react';
+import { DollarSign, X, Target, TrendingUp, Package2, Store, ArrowUpDown, Percent, Gauge } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
@@ -142,7 +142,7 @@ export const TotalSalesModal: React.FC = () => {
               </div>
               <span className="text-dark-200">Velocity</span>
             </div>
-            <span className="font-medium">$4,076.99</span>
+            <span className="font-medium">4,076.99%</span>
           </div>
         </div>
 
@@ -154,7 +154,10 @@ export const TotalSalesModal: React.FC = () => {
               </div>
               <span className="text-dark-200">U ASW</span>
             </div>
-            <span className="font-medium">7.15</span>
+            <div className="flex items-center gap-1">
+              <DollarSign className="w-3 h-3" />
+              <span className="font-medium">7.15</span>
+            </div>
           </div>
         </div>
 
@@ -166,35 +169,12 @@ export const TotalSalesModal: React.FC = () => {
               </div>
               <span className="text-dark-200">$ASW</span>
             </div>
-            <span className="font-medium">78.40</span>
-          </div>
-        </div>
-
-        {/*
-        <div className="p-4 bg-dark-800/30 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-[#F59E0B]/20">
-                <History className="w-4 h-4 text-[#F59E0B]" />
-              </div>
-              <span className="text-dark-200">$ASW Past Year</span>
+            <div className="flex items-center gap-1">
+              <DollarSign className="w-3 h-3" />
+              <span className="font-medium">78.40</span>
             </div>
-            <span className="text-dark-400">N/A</span>
           </div>
         </div>
-
-        <div className="p-4 bg-dark-800/30 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-[#10B981]/20">
-                <TrendingUp className="w-4 h-4 text-[#10B981]" />
-              </div>
-              <span className="text-dark-200">$ASW Growth</span>
-            </div>
-            <span className="text-dark-400">N/A</span>
-          </div>
-        </div>
-        */}
       </div>
     </motion.div>
   );

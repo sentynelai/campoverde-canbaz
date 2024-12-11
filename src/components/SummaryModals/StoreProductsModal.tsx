@@ -116,27 +116,8 @@ export const StoreProductsModal: React.FC = () => {
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-dark-400">$ASW</span>
-                  <span>{(product.sales / 3010 / 52).toFixed(2)}</span>
+                  <span>{(product.sales / 3010 / 52).toFixed(2).replace(/\.?0+$/, '')}</span>
                 </div>
-                {/* 
-                <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Sales growth</span>
-                  <span className="text-[#00FF9C]">+15.3%*</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">Sales mix</span>
-                  <span>{((product.sales / totalSales) * 100).toFixed(2)}%*</span>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">$ASW past year</span>
-                  <span>48.65*</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-dark-400">$ASW growth</span>
-                  <span>+8.5%*</span>
-                </div>
-                 */}
               </div>
             </div>
           </div>

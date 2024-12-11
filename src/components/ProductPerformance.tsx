@@ -78,8 +78,9 @@ export const ProductPerformance: React.FC = () => {
             const sales = selectedStore[product.salesColumn] || 0;
             const progress = (sales / product.target) * 100;
             const isOnTarget = progress >= 85;
-            
-            return sales && (
+
+            if(sales > 0) {
+              return (
               <motion.div
                 key={product.name}
                 initial={{ x: -20, opacity: 0 }}
@@ -133,7 +134,7 @@ export const ProductPerformance: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dark-400">Revenue</span>
-                      <span>${sales.toFixed(0)}</span>
+                      <span>${sales}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dark-400">Weighted sales</span>
@@ -143,6 +144,8 @@ export const ProductPerformance: React.FC = () => {
                 </div>
               </motion.div>
             );
+            }
+            
           })}
         </div>
 
