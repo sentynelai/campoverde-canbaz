@@ -14,8 +14,8 @@ export const SocialFooter: React.FC = () => {
   const metrics = [
     { 
       icon: Building2,
-      label: 'Total Locations',
-      value: totalLocations.toLocaleString(),
+      label: 'Total Stores',
+      value: 3010,
       color: '#00FF9C'
     },
     { 

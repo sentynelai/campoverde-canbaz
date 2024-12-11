@@ -4,16 +4,12 @@ import { useStoreData } from '../hooks/useStoreData';
 import { MapError } from './MapError';
 import { loadGoogleMaps } from '../lib/maps';
 import { MAPS_CONFIG } from '../lib/maps';
-import { REGIONS } from '../lib/regions';
-import { RegionModal } from './RegionModal';
 import type { StoreData } from '../types';
-import type { RegionData } from '../lib/regions';
 import { AnimatePresence } from 'framer-motion';
 
 const BATCH_SIZE = 500;
 const BATCH_DELAY = 100;
 const MIN_ZOOM_FOR_MARKERS = 9;
-const MAX_ZOOM_FOR_REGIONS = 8;
 
 const hasProductSales = (store: StoreData): boolean => {
   const productSalesFields = [
@@ -34,12 +30,10 @@ export const Map: React.FC = () => {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [currentZoom, setCurrentZoom] = useState(MAPS_CONFIG.defaultZoom);
   const [markerData, setMarkerData] = useState<Record<number, google.maps.Marker>>({});
-  const [selectedRegion, setSelectedRegion] = useState<RegionData | null>(null);
-  const [regionPolygons, setRegionPolygons] = useState<Record<string, google.maps.Polygon>>({});
   const [error, setError] = useState<string | null>(null);
   
   const { selectedStore, setSelectedStore } = useStoreSelection();
-  const { allStores, isLoading } = useStoreData(); // Use allStores instead of stores
+  const { allStores, isLoading } = useStoreData();
 
   const createMarker = useMemo(() => (store: StoreData, map: google.maps.Map) => {
     if (markerData[store.index]) {
@@ -142,63 +136,11 @@ export const Map: React.FC = () => {
         if (!mounted) return;
         setMapInstance(map);
 
-        // Initialize region polygons
-        Object.entries(REGIONS).forEach(([regionKey, regionData]) => {
-          const bounds = new google.maps.LatLngBounds(
-            new google.maps.LatLng(regionData.bounds.south, regionData.bounds.west),
-            new google.maps.LatLng(regionData.bounds.north, regionData.bounds.east)
-          );
-
-          const polygon = new google.maps.Polygon({
-            paths: [
-              { lat: regionData.bounds.north, lng: regionData.bounds.west },
-              { lat: regionData.bounds.north, lng: regionData.bounds.east },
-              { lat: regionData.bounds.south, lng: regionData.bounds.east },
-              { lat: regionData.bounds.south, lng: regionData.bounds.west }
-            ],
-            strokeColor: '#00FF9C',
-            strokeOpacity: 0.3,
-            strokeWeight: 2,
-            fillColor: '#00FF9C',
-            fillOpacity: 0.1,
-            map
-          });
-
-          polygon.addListener('click', () => {
-            setSelectedRegion(regionData);
-            map.fitBounds(bounds);
-          });
-
-          polygon.addListener('mouseover', () => {
-            polygon.setOptions({
-              fillOpacity: 0.2,
-              strokeOpacity: 0.5
-            });
-          });
-
-          polygon.addListener('mouseout', () => {
-            polygon.setOptions({
-              fillOpacity: 0.1,
-              strokeOpacity: 0.3
-            });
-          });
-
-          setRegionPolygons(prev => ({
-            ...prev,
-            [regionKey]: polygon
-          }));
-        });
-
         map.addListener('zoom_changed', () => {
           const zoom = map.getZoom();
           if (zoom) {
             setCurrentZoom(zoom);
             
-            // Toggle region polygons visibility
-            Object.values(regionPolygons).forEach(polygon => {
-              polygon.setVisible(zoom <= MAX_ZOOM_FOR_REGIONS);
-            });
-
             // Toggle markers visibility
             Object.values(markerData).forEach(marker => {
               marker.setVisible(zoom >= MIN_ZOOM_FOR_MARKERS);
@@ -246,14 +188,6 @@ export const Map: React.FC = () => {
           Zoom in closer to see store locations
         </div>
       )}
-      <AnimatePresence>
-        {selectedRegion && (
-          <RegionModal
-            stats={selectedRegion}
-            onClose={() => setSelectedRegion(null)}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 };
