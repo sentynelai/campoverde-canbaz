@@ -45,9 +45,15 @@ export function useStoreData() {
     }
   );
 
+  // Stores with product sales (for map markers)
   const stores = useMemo(() => {
     const allStores = data?.data || [];
     return allStores.filter(hasProductSales);
+  }, [data]);
+
+  // All stores (for summary data)
+  const allStores = useMemo(() => {
+    return data?.data || [];
   }, [data]);
 
   const handleRefreshData = useCallback(async () => {
@@ -80,8 +86,8 @@ export function useStoreData() {
   }, [mutate, setIsRefreshing, setErrorMessage, setLastUpdate]);
 
   return {
-    stores,
-    allStores: data?.data || [],
+    stores, // Filtered stores for map
+    allStores, // All stores for summary data
     isLoading,
     isError: error,
     refreshData: handleRefreshData,
