@@ -5,10 +5,10 @@ import { useProductKPIs } from '../hooks/useProductKPIs';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const SocialFooter: React.FC = () => {
-  const { stores } = useStoreData();
+  const { allStores } = useStoreData(); // Use allStores instead of stores
   const { products } = useProductKPIs();
   
-  const totalLocations = stores.length;
+  const totalLocations = allStores.length;
   const totalProducts = products.length;
 
   const metrics = [

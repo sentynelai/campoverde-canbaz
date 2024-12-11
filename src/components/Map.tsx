@@ -15,6 +15,19 @@ const BATCH_DELAY = 100;
 const MIN_ZOOM_FOR_MARKERS = 9;
 const MAX_ZOOM_FOR_REGIONS = 8;
 
+const hasProductSales = (store: StoreData): boolean => {
+  const productSalesFields = [
+    'CV ENERGY BOOST Sales',
+    'CV EXOTIC INDULGENCE Sales',
+    'CV ACAI ENERGIZE PWR Sales',
+    'CV PASSION BLISS Sales',
+    'CV FIT & WELLNESS Sales',
+    'CV CHIA SUPREMACY Sales'
+  ];
+
+  return productSalesFields.some(field => (store[field] || 0) > 0);
+};
+
 export const Map: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
@@ -26,7 +39,7 @@ export const Map: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const { selectedStore, setSelectedStore } = useStoreSelection();
-  const { stores, isLoading } = useStoreData();
+  const { allStores, isLoading } = useStoreData(); // Use allStores instead of stores
 
   const createMarker = useMemo(() => (store: StoreData, map: google.maps.Map) => {
     if (markerData[store.index]) {
@@ -36,6 +49,7 @@ export const Map: React.FC = () => {
     }
 
     const isSelected = selectedStore?.index === store.index;
+    const hasSales = hasProductSales(store);
 
     const marker = new google.maps.Marker({
       position: { lat: store.latitude, lng: store.longitude },
@@ -43,63 +57,65 @@ export const Map: React.FC = () => {
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: isSelected ? 10 : 8,
-        fillColor: '#00FF9C',
-        fillOpacity: isSelected ? 0.9 : 0.7,
+        fillColor: hasSales ? '#00FF9C' : '#737373',
+        fillOpacity: isSelected ? 0.9 : hasSales ? 0.7 : 0.4,
         strokeWeight: 2.5,
         strokeColor: '#ffffff',
-        strokeOpacity: 0.9
+        strokeOpacity: hasSales ? 0.9 : 0.5
       },
       optimized: true,
-      clickable: true,
-      zIndex: isSelected ? 2 : 1,
-      title: `${store.name} - ${store.city}, ${store.state}`
+      clickable: hasSales,
+      zIndex: isSelected ? 2 : hasSales ? 1 : 0,
+      title: hasSales ? `${store.name} - ${store.city}, ${store.state}` : undefined
     });
 
-    const infoWindow = new google.maps.InfoWindow({
-      content: `
-        <div class="p-3">
-          <div class="font-semibold text-lg mb-1">${store.name}</div>
-          <div class="text-sm mb-1">${store.street_address}</div>
-          <div class="text-sm">${store.city}, ${store.state} ${store.zip_code}</div>
-          <div class="text-sm mt-2 font-medium">Sales: $${(store.sales/1000000).toFixed(1)}M</div>
-        </div>
-      `,
-      pixelOffset: new google.maps.Size(0, -5)
-    });
-
-    marker.addListener('mouseover', () => {
-      marker.setIcon({
-        ...marker.getIcon(),
-        fillOpacity: 0.9,
-        scale: 12,
-        zIndex: 3
+    if (hasSales) {
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div class="p-3">
+            <div class="font-semibold text-lg mb-1">${store.name}</div>
+            <div class="text-sm mb-1">${store.street_address}</div>
+            <div class="text-sm">${store.city}, ${store.state} ${store.zip_code}</div>
+            <div class="text-sm mt-2 font-medium">Sales: $${(store.sales/1000000).toFixed(1)}M</div>
+          </div>
+        `,
+        pixelOffset: new google.maps.Size(0, -5)
       });
-      infoWindow.open(map, marker);
-    });
 
-    marker.addListener('mouseout', () => {
-      if (selectedStore?.index !== store.index) {
+      marker.addListener('mouseover', () => {
         marker.setIcon({
           ...marker.getIcon(),
-          fillOpacity: 0.7,
-          scale: 8,
-          zIndex: 1
+          fillOpacity: 0.9,
+          scale: 12,
+          zIndex: 3
         });
-      }
-      infoWindow.close();
-    });
+        infoWindow.open(map, marker);
+      });
 
-    marker.addListener('click', () => {
-      if (clickTimeoutRef.current) {
-        clearTimeout(clickTimeoutRef.current);
-      }
+      marker.addListener('mouseout', () => {
+        if (selectedStore?.index !== store.index) {
+          marker.setIcon({
+            ...marker.getIcon(),
+            fillOpacity: 0.7,
+            scale: 8,
+            zIndex: 1
+          });
+        }
+        infoWindow.close();
+      });
 
-      clickTimeoutRef.current = setTimeout(async () => {
-        setSelectedStore(store);
-        map.panTo({ lat: store.latitude, lng: store.longitude });
-        map.setZoom(16);
-      }, 100);
-    });
+      marker.addListener('click', () => {
+        if (clickTimeoutRef.current) {
+          clearTimeout(clickTimeoutRef.current);
+        }
+
+        clickTimeoutRef.current = setTimeout(async () => {
+          setSelectedStore(store);
+          map.panTo({ lat: store.latitude, lng: store.longitude });
+          map.setZoom(16);
+        }, 100);
+      });
+    }
 
     setMarkerData(prev => ({ ...prev, [store.index]: marker }));
     return marker;
@@ -203,20 +219,20 @@ export const Map: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!mapInstance || !stores.length || currentZoom < MIN_ZOOM_FOR_MARKERS) return;
+    if (!mapInstance || !allStores.length || currentZoom < MIN_ZOOM_FOR_MARKERS) return;
 
     const showMarkers = async () => {
-      for (let i = 0; i < stores.length; i += BATCH_SIZE) {
-        const batch = stores.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < allStores.length; i += BATCH_SIZE) {
+        const batch = allStores.slice(i, i + BATCH_SIZE);
         batch.forEach(store => createMarker(store, mapInstance));
-        if (i + BATCH_SIZE < stores.length) {
+        if (i + BATCH_SIZE < allStores.length) {
           await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
         }
       }
     };
 
     showMarkers();
-  }, [mapInstance, stores, currentZoom, createMarker]);
+  }, [mapInstance, allStores, currentZoom, createMarker]);
 
   if (error) {
     return <MapError message={error} />;

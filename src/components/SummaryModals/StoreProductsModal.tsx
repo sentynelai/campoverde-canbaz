@@ -3,6 +3,7 @@ import { Package, X, Leaf, Zap, Coffee, Heart, Apple, Dumbbell } from 'lucide-re
 import { motion } from 'framer-motion';
 import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
+import { ProductQuantityMetrics } from './ProductQuantityMetrics';
 
 const PRODUCT_COLUMNS = [
   {
@@ -91,6 +92,8 @@ export const StoreProductsModal: React.FC = () => {
           </motion.div>
         ))}
       </div>
+
+      <ProductQuantityMetrics />
     </motion.div>
   );
 };

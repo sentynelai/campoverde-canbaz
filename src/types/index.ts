@@ -14,6 +14,8 @@ export interface StoreData {
   negative: number;
   digitalAudience: number;
   trend: number;
+  'Qty TY': number;
+  'Qty LY': number;
   socialMedia: {
     facebook: number;
     instagram: number;
