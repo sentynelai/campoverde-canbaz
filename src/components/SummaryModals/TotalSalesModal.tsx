@@ -142,7 +142,7 @@ export const TotalSalesModal: React.FC = () => {
               </div>
               <span className="text-dark-200">Velocity</span>
             </div>
-            <span className="font-medium">4,076.99%</span>
+            <span className="font-medium">$4,076.99</span>
           </div>
         </div>
 
@@ -170,6 +170,7 @@ export const TotalSalesModal: React.FC = () => {
           </div>
         </div>
 
+        {/*
         <div className="p-4 bg-dark-800/30 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -193,6 +194,7 @@ export const TotalSalesModal: React.FC = () => {
             <span className="text-dark-400">N/A</span>
           </div>
         </div>
+        */}
       </div>
     </motion.div>
   );

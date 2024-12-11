@@ -47,21 +47,20 @@ export const StoreProductsModal: React.FC = () => {
   const { allStores } = useStoreData();
   const { setIsVisible } = useSummaryModals();
 
-  const { productTotals, totalSales } = useMemo(() => {
-    const totals = PRODUCT_COLUMNS.reduce((acc, { id }) => {
-      const total = allStores.reduce((sum, store) => sum + (store[id] || 0), 0);
-      return {
-        ...acc,
-        [id]: total
-      };
-    }, {} as Record<string, number>);
+  const { sortedProducts, totalSales } = useMemo(() => {
+    // Calculate total sales for each product
+    const productSales = PRODUCT_COLUMNS.map(product => {
+      const sales = allStores.reduce((sum, store) => sum + (store[product.id] || 0), 0);
+      return { ...product, sales };
+    });
 
-    const total = Object.values(totals).reduce((sum, value) => sum + value, 0);
+    // Sort products by sales in descending order
+    const sorted = productSales.sort((a, b) => b.sales - a.sales);
 
-    return {
-      productTotals: totals,
-      totalSales: total
-    };
+    // Calculate total sales across all products
+    const total = sorted.reduce((sum, product) => sum + product.sales, 0);
+
+    return { sortedProducts: sorted, totalSales: total };
   }, [allStores]);
 
   return (
@@ -84,84 +83,64 @@ export const StoreProductsModal: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {PRODUCT_COLUMNS.map((product, index) => {
-          const Icon = product.icon;
-          const value = productTotals[product.id];
-          const salesMix = ((value / totalSales) * 100).toFixed(2);
-
-          return (
-            <div key={product.id} className="space-y-4">
-              {/* Main Product Info */}
-              <div className="p-4 bg-dark-800/30 rounded-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${product.color}20` }}>
-                      <Icon className="w-4 h-4" style={{ color: product.color }} />
-                    </div>
-                    <span className="text-dark-200">{product.name}</span>
+        {sortedProducts.map((product, index) => (
+          <div key={product.id} className="space-y-4">
+            <div className="p-4 bg-dark-800/30 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${product.color}20` }}>
+                    <product.icon className="w-4 h-4" style={{ color: product.color }} />
                   </div>
-                  <span className="font-medium">${(value / 1000).toFixed(2)}k</span>
+                  <span className="text-dark-200">{product.name}</span>
                 </div>
+                <span className="font-medium">${(product.sales / 1000).toFixed(2)}k</span>
+              </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-dark-400">Progress</span>
-                    <span className="text-[#00FF9C]">80%</span>
-                  </div>
-                  <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: '80%' }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full bg-[#00FF9C] rounded-full"
-                    />
-                  </div>
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-dark-400">Progress</span>
+                  <span className="text-[#00FF9C]">80%</span>
+                </div>
+                <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: '80%' }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className="h-full bg-[#00FF9C] rounded-full"
+                  />
                 </div>
               </div>
 
               {/* Additional Metrics */}
-              <div className="grid grid-cols-2 gap-3">
-                {/*
-                <div className="p-3 bg-dark-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-dark-400">Sales growth</span>
-                    <span className="text-xs font-medium">+15.3%*</span>
-                  </div>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-400">$ASW</span>
+                  <span>{(product.sales / 3010 / 52).toFixed(2)}</span>
                 </div>
-
-                <div className="p-3 bg-dark-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-dark-400">Sales mix</span>
-                    <span className="text-xs font-medium">{salesMix}%*</span>
-                  </div>
+                {/* 
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-400">Sales growth</span>
+                  <span className="text-[#00FF9C]">+15.3%*</span>
                 </div>
-*/}
-                <div className="p-3 bg-dark-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-dark-400">$ASW</span>
-                    <span className="text-xs font-medium">{((value) / 3010 / 52).toFixed(4)}</span>
-                  </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-400">Sales mix</span>
+                  <span>{((product.sales / totalSales) * 100).toFixed(2)}%*</span>
                 </div>
-{/*
-                <div className="p-3 bg-dark-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-dark-400">$ASW past year</span>
-                    <span className="text-xs font-medium">48.65*</span>
-                  </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-400">$ASW past year</span>
+                  <span>48.65*</span>
                 </div>
-
-                <div className="col-span-2 p-3 bg-dark-800/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-dark-400">$ASW growth</span>
-                    <span className="text-xs font-medium">+8.5%*</span>
-                  </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-400">$ASW growth</span>
+                  <span>+8.5%*</span>
                 </div>
-              */}
+                 */}
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </motion.div>
   );

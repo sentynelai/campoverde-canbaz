@@ -10,21 +10,20 @@ export const StoreProductsModal: React.FC = () => {
   const { allStores } = useStoreData();
   const { setIsVisible } = useSummaryModals();
 
-  const { productTotals, totalSales } = useMemo(() => {
-    const totals = PRODUCT_COLUMNS.reduce((acc, { id }) => {
-      const total = allStores.reduce((sum, store) => sum + (store[id] || 0), 0);
-      return {
-        ...acc,
-        [id]: total
-      };
-    }, {} as Record<string, number>);
+  const { sortedProducts, totalSales } = useMemo(() => {
+    // Calculate total sales for each product
+    const productSales = PRODUCT_COLUMNS.map(product => {
+      const sales = allStores.reduce((sum, store) => sum + (store[product.id] || 0), 0);
+      return { ...product, sales };
+    });
 
-    const total = Object.values(totals).reduce((sum, value) => sum + value, 0);
+    // Sort products by sales in descending order
+    const sorted = productSales.sort((a, b) => b.sales - a.sales);
 
-    return {
-      productTotals: totals,
-      totalSales: total
-    };
+    // Calculate total sales across all products
+    const total = sorted.reduce((sum, product) => sum + product.sales, 0);
+
+    return { sortedProducts: sorted, totalSales: total };
   }, [allStores]);
 
   return (
@@ -47,14 +46,14 @@ export const StoreProductsModal: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {PRODUCT_COLUMNS.map((product, index) => (
+        {sortedProducts.map((product, index) => (
           <ProductRow
             key={product.id}
             id={product.id}
             name={product.name}
             icon={product.icon}
             color={product.color}
-            value={productTotals[product.id]}
+            value={product.sales}
             totalSales={totalSales}
             index={index}
           />

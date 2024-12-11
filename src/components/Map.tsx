@@ -9,7 +9,6 @@ import { AnimatePresence } from 'framer-motion';
 
 const BATCH_SIZE = 500;
 const BATCH_DELAY = 100;
-const MIN_ZOOM_FOR_MARKERS = 9;
 
 const hasProductSales = (store: StoreData): boolean => {
   const productSalesFields = [
@@ -28,7 +27,6 @@ export const Map: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout>();
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [currentZoom, setCurrentZoom] = useState(MAPS_CONFIG.defaultZoom);
   const [markerData, setMarkerData] = useState<Record<number, google.maps.Marker>>({});
   const [error, setError] = useState<string | null>(null);
   
@@ -136,18 +134,6 @@ export const Map: React.FC = () => {
         if (!mounted) return;
         setMapInstance(map);
 
-        map.addListener('zoom_changed', () => {
-          const zoom = map.getZoom();
-          if (zoom) {
-            setCurrentZoom(zoom);
-            
-            // Toggle markers visibility
-            Object.values(markerData).forEach(marker => {
-              marker.setVisible(zoom >= MIN_ZOOM_FOR_MARKERS);
-            });
-          }
-        });
-
       } catch (err) {
         console.error('Error initializing map:', err);
         setError(err instanceof Error ? err.message : 'Failed to load map');
@@ -161,7 +147,7 @@ export const Map: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!mapInstance || !allStores.length || currentZoom < MIN_ZOOM_FOR_MARKERS) return;
+    if (!mapInstance || !allStores.length) return;
 
     const showMarkers = async () => {
       for (let i = 0; i < allStores.length; i += BATCH_SIZE) {
@@ -174,20 +160,13 @@ export const Map: React.FC = () => {
     };
 
     showMarkers();
-  }, [mapInstance, allStores, currentZoom, createMarker]);
+  }, [mapInstance, allStores, createMarker]);
 
   if (error) {
     return <MapError message={error} />;
   }
 
   return (
-    <>
-      <div ref={mapRef} className="w-full h-full opacity-90" />
-      {currentZoom < MIN_ZOOM_FOR_MARKERS && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dark-950/90 backdrop-blur-sm px-6 py-3 rounded-lg border border-dark-800/50 text-sm">
-          Zoom in closer to see store locations
-        </div>
-      )}
-    </>
+    <div ref={mapRef} className="w-full h-full opacity-90" />
   );
 };
