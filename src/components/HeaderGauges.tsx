@@ -35,7 +35,7 @@ export const HeaderGauges: React.FC = () => {
   const gauges = [
     {
       label: 'Sales',
-      value: `$10.4M`,
+      value: `$12.3M`,
       icon: DollarSign,
       gauge: selectedStore && allStores.length > 0 ? 
         ((selectedStore.sales || 0) / Math.max(...allStores.map(s => s.sales || 0))) * 100 : 100

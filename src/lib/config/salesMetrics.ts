@@ -8,22 +8,40 @@ export interface SalesMetric {
   color: string;
 }
 
+const TOTAL_US_SALES = 441800000000;
+const CAMPOVERDE_SALES = 12271732.65;
+
+const formatLargeNumber = (num: number): string => {
+  if (num >= 1e9) {
+    return `$${(num / 1e9).toFixed(1)}B`;
+  }
+  if (num >= 1e6) {
+    return `$${(num / 1e6).toFixed(1)}M`;
+  }
+  return `$${num.toLocaleString()}`;
+};
+
+const calculatePercentage = (part: number, total: number): string => {
+  const percentage = (part * 100) / total;
+  return `${percentage.toFixed(4)}%`;
+};
+
 export const getSalesMetrics = (): SalesMetric[] => [
   {
-    label: 'Total US Sales',
-    value: '$441.8B',
+    label: 'Total Walmart Sales',
+    value: formatLargeNumber(TOTAL_US_SALES),
     icon: DollarSign,
     color: '#00FF9C'
   },
   {
     label: 'Campoverde Sales',
-    value: '$10.4M',
+    value: formatLargeNumber(CAMPOVERDE_SALES),
     icon: TrendingUp,
     color: '#3B82F6'
   },
   {
-    label: '% Campoverde Sales',
-    value: '$0.00%',
+    label: 'CV Market Share',
+    value: calculatePercentage(CAMPOVERDE_SALES, TOTAL_US_SALES),
     icon: PieChart,
     color: '#F59E0B'
   },
