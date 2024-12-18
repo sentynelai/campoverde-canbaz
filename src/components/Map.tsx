@@ -1,84 +1,37 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useStoreSelection } from '../hooks/useStoreSelection';
 import { useStoreData } from '../hooks/useStoreData';
+import { useTierFilter } from '../contexts/TierFilterContext';
+import { useMapMarkers } from '../hooks/useMapMarkers';
 import { MapError } from './MapError';
 import { loadGoogleMaps } from '../lib/maps';
 import { MAPS_CONFIG } from '../lib/maps';
 import { useMapReset } from '../hooks/useMapReset';
-import type { StoreData } from '../types';
+import { MapLegend } from './MapLegend';
 
 const BATCH_SIZE = 500;
 const BATCH_DELAY = 100;
 
-const hasProductSales = (store: StoreData): boolean => {
-  const productSalesFields = [
-    'CV ENERGY BOOST Sales',
-    'CV EXOTIC INDULGENCE Sales',
-    'CV ACAI ENERGIZE PWR Sales',
-    'CV PASSION BLISS Sales',
-    'CV FIT & WELLNESS Sales',
-    'CV CHIA SUPREMACY Sales'
-  ];
-
-  return productSalesFields.some(field => (store[field] || 0) > 0);
-};
-
 export const Map: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const clickTimeoutRef = useRef<NodeJS.Timeout>();
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [markerData, setMarkerData] = useState<Record<number, google.maps.Marker>>({});
-  const [error, setError] = useState<string | null>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const markersInitializedRef = useRef(false);
   
   const { selectedStore, setSelectedStore } = useStoreSelection();
-  const { allStores, isLoading } = useStoreData();
+  const { allStores } = useStoreData();
   const { setMapInstance: setGlobalMapInstance } = useMapReset();
+  const { activeTiers } = useTierFilter();
+  const { createMarker, updateMarkersVisibility, clearMarkers } = useMapMarkers();
 
-  const createMarker = useMemo(() => (store: StoreData, map: google.maps.Map) => {
-    if (markerData[store.index]) {
-      const existingMarker = markerData[store.index];
-      existingMarker.setMap(map);
-      return existingMarker;
-    }
+  const handleMarkerClick = useCallback((store: StoreData) => {
+    if (!mapInstance) return;
+    setSelectedStore(store);
+    mapInstance.panTo({ lat: store.latitude, lng: store.longitude });
+    mapInstance.setZoom(16);
+  }, [mapInstance, setSelectedStore]);
 
-    const isSelected = selectedStore?.index === store.index;
-    const hasSales = hasProductSales(store);
-
-    const marker = new google.maps.Marker({
-      position: { lat: store.latitude, lng: store.longitude },
-      map,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: isSelected ? 10 : 8,
-        fillColor: hasSales ? '#00FF9C' : '#737373',
-        fillOpacity: isSelected ? 0.9 : hasSales ? 0.7 : 0.4,
-        strokeWeight: 2.5,
-        strokeColor: '#ffffff',
-        strokeOpacity: hasSales ? 0.9 : 0.5
-      },
-      optimized: true,
-      clickable: hasSales,
-      zIndex: isSelected ? 2 : hasSales ? 1 : 0
-    });
-
-    if (hasSales) {
-      marker.addListener('click', () => {
-        if (clickTimeoutRef.current) {
-          clearTimeout(clickTimeoutRef.current);
-        }
-
-        clickTimeoutRef.current = setTimeout(async () => {
-          setSelectedStore(store);
-          map.panTo({ lat: store.latitude, lng: store.longitude });
-          map.setZoom(16);
-        }, 100);
-      });
-    }
-
-    setMarkerData(prev => ({ ...prev, [store.index]: marker }));
-    return marker;
-  }, [selectedStore, setSelectedStore, markerData]);
-
+  // Initialize map
   useEffect(() => {
     let mounted = true;
 
@@ -103,37 +56,57 @@ export const Map: React.FC = () => {
 
       } catch (err) {
         console.error('Error initializing map:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load map');
+        setMapError(err instanceof Error ? err.message : 'Failed to load map');
       }
     };
 
     initializeMap();
     return () => {
       mounted = false;
+      clearMarkers();
     };
-  }, [setGlobalMapInstance]);
+  }, [setGlobalMapInstance, clearMarkers]);
 
+  // Create markers
   useEffect(() => {
-    if (!mapInstance || !allStores.length) return;
+    if (!mapInstance || !allStores.length || markersInitializedRef.current) return;
 
     const showMarkers = async () => {
       for (let i = 0; i < allStores.length; i += BATCH_SIZE) {
         const batch = allStores.slice(i, i + BATCH_SIZE);
-        batch.forEach(store => createMarker(store, mapInstance));
+        batch.forEach(store => {
+          createMarker(
+            store,
+            mapInstance,
+            activeTiers,
+            selectedStore?.id ?? null,
+            handleMarkerClick
+          );
+        });
         if (i + BATCH_SIZE < allStores.length) {
           await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
         }
       }
+      markersInitializedRef.current = true;
     };
 
     showMarkers();
-  }, [mapInstance, allStores, createMarker]);
+  }, [mapInstance, allStores, createMarker, activeTiers, selectedStore, handleMarkerClick]);
 
-  if (error) {
-    return <MapError message={error} />;
+  // Update markers visibility when filters change
+  useEffect(() => {
+    if (!markersInitializedRef.current) return;
+    updateMarkersVisibility(mapInstance, allStores, activeTiers, selectedStore?.id ?? null);
+  }, [activeTiers, mapInstance, allStores, selectedStore, updateMarkersVisibility]);
+
+  if (mapError) {
+    return <MapError message={mapError} />;
   }
 
   return (
-    <div ref={mapRef} className="w-full h-full opacity-90" />
+    <>
+      <div ref={mapRef} className="w-full h-full opacity-90" />
+      <MapLegend />
+    </>
   );
 };

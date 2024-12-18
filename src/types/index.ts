@@ -14,6 +14,7 @@ export interface StoreData {
   negative: number;
   digitalAudience: number;
   trend: number;
+  tier: TierType;
   'Qty TY': number;
   'Qty LY': number;
   socialMedia: {
@@ -25,15 +26,13 @@ export interface StoreData {
   [key: string]: any;
 }
 
-export interface ProductKPI {
-  id: string;
-  name: string;
-  current: number;
-  target: number;
-}
+export type TierType = 'Diamond' | 'Emerald' | 'Amethyst' | 'Quartz' | 'Topaz' | string;
 
-export interface ChatMessage {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
+export interface TierColors {
+  [key: string]: string;
+  Diamond: string;
+  Emerald: string;
+  Amethyst: string;
+  Quartz: string;
+  Topaz: string;
 }

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
 import { calculateQuantityMetrics } from '../../lib/metrics/quantityMetrics';
+import { TiersMetrics } from './TotalSalesModal/TiersMetrics';
 
 export const TotalSalesModal: React.FC = () => {
   const { setIsVisible } = useSummaryModals();
@@ -175,6 +176,8 @@ export const TotalSalesModal: React.FC = () => {
             </div>
           </div>
         </div>
+
+        <TiersMetrics/>
       </div>
     </motion.div>
   );

@@ -6,6 +6,7 @@ import { SalesProgress } from './SalesProgress';
 import { UnitsMetrics } from './UnitsMetrics';
 import { DistributionMetrics } from './DistributionMetrics';
 import { PerformanceMetrics } from './PerformanceMetrics';
+import { TiersMetrics } from './TiersMetrics';
 
 export const TotalSalesModal: React.FC = () => {
   const { setIsVisible } = useSummaryModals();
@@ -35,6 +36,7 @@ export const TotalSalesModal: React.FC = () => {
       <UnitsMetrics />
       <DistributionMetrics />
       <PerformanceMetrics />
+      <TiersMetrics />
     </motion.div>
   );
 };

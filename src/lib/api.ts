@@ -84,6 +84,7 @@ export async function fetchStoreData(): Promise<{ data: StoreData[]; error?: str
         'CV CHIA SUPREMACY Sales': parseFloat(store['CV CHIA SUPREMACY Sales']) || 0,
         'Qty TY': parseInt(store['Qty TY']) || 0,
         'Qty LY': parseInt(store['Qty LY']) || 0,
+        tier: store.sales_tier || 'Unknown',
         digital_audience_facebook: parseInt(store.digital_audience_facebook) || 0,
         digital_audience_instagram: parseInt(store.digital_audience_instagram) || 0,
         digital_audience_twitter: parseInt(store.digital_audience_twitter) || 0,
