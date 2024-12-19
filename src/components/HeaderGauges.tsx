@@ -9,23 +9,21 @@ export const HeaderGauges: React.FC = () => {
   const { selectedStore } = useStoreSelection();
 
   const calculateMetrics = () => {
-    const storeList = selectedStore ? stores : allStores;
+    const storeList = selectedStore ? [selectedStore] : allStores;
     
     if (!storeList || storeList.length === 0) {
       return {
         sales: 0,
-        trend: 0,
         social: 0
       };
     }
 
-    const totalSales = storeList.reduce((acc, store) => acc + (store.sales || 0), 0);
-    const avgTrend = storeList.reduce((acc, store) => acc + (store.trend || 0), 0) / storeList.length;
+    // Calculate total sales from column 31 (sales_52w)
+    const totalSales = storeList.reduce((acc, store) => acc + (store.sales_52w || 0), 0);
     const totalSocial = storeList.reduce((acc, store) => acc + (store.digitalAudience || 0), 0);
 
     return {
       sales: totalSales,
-      trend: avgTrend,
       social: totalSocial
     };
   };
@@ -35,22 +33,24 @@ export const HeaderGauges: React.FC = () => {
   const gauges = [
     {
       label: 'Sales',
-      value: `$12.3M`,
+      value: `$12.8M`,
       icon: DollarSign,
+      color: '[#00FF9C]',
       gauge: selectedStore && allStores.length > 0 ? 
-        ((selectedStore.sales || 0) / Math.max(...allStores.map(s => s.sales || 0))) * 100 : 100
+        ((selectedStore.sales_52w || 0) / Math.max(...allStores.map(s => s.sales_52w || 0))) * 100 : 100
     },
     {
       label: 'Velocity',
-      value: `${metrics.trend.toFixed(1)}%`,
+      value: '72.7%',
       icon: Zap,
-      gauge: selectedStore ? 
-        ((selectedStore.trend + 20) / 40) * 100 : 85
+      color: 'blue-400',
+      gauge: 72.7
     },
     {
       label: 'Digital',
-      value: `${(metrics.social / 1000000).toFixed(1)}M`,
+      value: `${Math.round(metrics.social / 1000).toLocaleString()}K`,
       icon: Share2,
+      color: 'purple-400',
       gauge: selectedStore && allStores.length > 0 ? 
         ((selectedStore.digitalAudience || 0) / Math.max(...allStores.map(s => s.digitalAudience || 0))) * 100 : 92
     }
@@ -80,7 +80,7 @@ export const HeaderGauges: React.FC = () => {
                 cx="50%"
                 cy="50%"
                 r="45%"
-                className="stroke-[#00FF9C]"
+                className={`stroke-${gauge.color}`}
                 strokeWidth="4"
                 fill="none"
                 strokeDasharray={`${2 * Math.PI * 45}`}
@@ -89,7 +89,7 @@ export const HeaderGauges: React.FC = () => {
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <gauge.icon className="w-4 h-4 text-[#00FF9C]" />
+              <gauge.icon className={`w-4 h-4 text-${gauge.color}`} />
             </div>
           </div>
           <div className="hidden sm:block">

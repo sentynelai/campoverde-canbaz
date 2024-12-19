@@ -56,8 +56,8 @@ export const App: React.FC = () => {
               {selectedStore && (
                 <StoreOverlay>
                   <AudienceMetrics />
-                  <ProductPerformance />
                   <BusinessPerformance />
+                  <ProductPerformance />
                   <AudienceKPIs />
                 </StoreOverlay>
               )}

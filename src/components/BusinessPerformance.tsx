@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DollarSign, TrendingUp, BarChart } from 'lucide-react';
 import { useStoreSelection } from '../hooks/useStoreSelection';
+import { calculateTotalProductSales } from '../utils/salesCalculations';
 
 export const BusinessPerformance: React.FC = () => {
   const { selectedStore } = useStoreSelection();
+
+  const { totalRevenue, totalTarget } = useMemo(() => {
+    if (!selectedStore) return { totalRevenue: 0, totalTarget: 0 };
+
+    const revenue = calculateTotalProductSales(selectedStore);
+    const target = 0; // Default target
+
+    return { totalRevenue: revenue, totalTarget: target };
+  }, [selectedStore]);
 
   if (!selectedStore) return null;
 
@@ -21,6 +31,13 @@ export const BusinessPerformance: React.FC = () => {
       icon: TrendingUp,
       color: 'blue-400'
     }
+  ];
+
+  const performanceMetrics = [
+    { label: 'Penetration', value: '$0' },
+    { label: 'Units sold', value: selectedStore.total_sales?.toLocaleString() || '0' },
+    { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}` },
+    { label: 'Weighted sales', value: '$0' }
   ];
 
   return (
@@ -59,6 +76,22 @@ export const BusinessPerformance: React.FC = () => {
               </div>
             </motion.div>
           ))}
+
+          {/* New Performance Metrics Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-dark-800/30 rounded-lg"
+          >
+            <div className="space-y-2">
+              {performanceMetrics.map((metric) => (
+                <div key={metric.label} className="flex justify-between text-sm">
+                  <span className="text-dark-400">{metric.label}</span>
+                  <span>{metric.value}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </motion.div>
     </AnimatePresence>

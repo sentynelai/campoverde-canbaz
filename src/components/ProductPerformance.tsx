@@ -120,28 +120,6 @@ export const ProductPerformance: React.FC = () => {
                   </span>
                 </div>
 
-                <div
-                  className="mt-4 p-4 bg-dark-800/30 rounded-lg"
-                >
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-dark-400">Penetration</span>
-                      <span>$0</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-dark-400">Units sold</span>
-                      <span>0</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-dark-400">Revenue</span>
-                      <span>${sales}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-dark-400">Weighted sales</span>
-                      <span>0%</span>
-                    </div>
-                  </div>
-                </div>
               </motion.div>
             );
             }
@@ -149,22 +127,7 @@ export const ProductPerformance: React.FC = () => {
           })}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-dark-800/50 sticky bottom-0 bg-dark-950/90 py-2 space-y-4">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-dark-400">Total Revenue</span>
-              <span className="text-[#00FF9C] font-medium">
-                ${totalRevenue.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-dark-400">Target Revenue</span>
-              <span className="text-dark-200 font-medium">
-                ${(totalTarget).toFixed(2)}
-              </span>
-            </div>
-          </div>
-        </div>
+      
       </motion.div>
     </AnimatePresence>
   );

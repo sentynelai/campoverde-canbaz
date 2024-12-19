@@ -8,25 +8,6 @@ let cachedData: {
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 let lastFetchTime = 0;
 
-async function downloadLatestCSV(): Promise<boolean> {
-  const SPREADSHEET_ID = '1yWXM53omNjeNQaVfb3vyodvTVUOldEhKkcTZrvmlWjM';
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=walmart-stores-tiers`;
-  
-  try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    
-    const csvData = await response.text();
-    localStorage.setItem('stores-csv', csvData);
-    localStorage.setItem('stores-csv-timestamp', Date.now().toString());
-    
-    return true;
-  } catch (error) {
-    console.error('Error downloading CSV:', error);
-    return false;
-  }
-}
-
 function validateCoordinates(lat: number, lng: number): boolean {
   return (
     typeof lat === 'number' &&
@@ -61,6 +42,8 @@ export async function fetchStoreData(): Promise<{ data: StoreData[]; error?: str
         latitude: parseFloat(store.latitude),
         longitude: parseFloat(store.longitude),
         sales: parseFloat(store.total_sales) || 0,
+        sales_52w: parseFloat(store.sales_52w) || 0,
+        velocity_ty_cv: parseFloat(store.velocity_ty_cv) || 0,
         campoverde_sales: parseFloat(store.campoverde_sales) || 0,
         customers: parseInt(store.customers) || 0,
         region: store.region || 'Unknown',
@@ -122,12 +105,13 @@ export async function fetchStoreData(): Promise<{ data: StoreData[]; error?: str
 
 export async function refreshData(): Promise<boolean> {
   try {
-    const success = await downloadLatestCSV();
-    if (success) {
-      cachedData = null; // Clear cache to force reload
-      lastFetchTime = 0;
-    }
-    return success;
+    // Clear cache to force reload
+    cachedData = null;
+    lastFetchTime = 0;
+    
+    // Fetch fresh data
+    const result = await fetchStoreData();
+    return result.data.length > 0;
   } catch (error) {
     console.error('Error refreshing data:', error);
     return false;

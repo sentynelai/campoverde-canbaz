@@ -1,4 +1,5 @@
 import { TIER_COLORS } from '../../constants/tiers';
+import { isInContinentalUS } from '../../utils/locationFilters';
 import type { StoreData } from '../../types';
 
 interface MarkerOptions {
@@ -20,6 +21,10 @@ export function createMarkerIcon({ isSelected, isVisible, tierColor }: MarkerOpt
 }
 
 export function getMarkerVisibility(store: StoreData, activeTiers: Set<string>): boolean {
+  // Check if store is in continental US before showing marker
+  if (!isInContinentalUS(store.latitude, store.longitude)) {
+    return false;
+  }
   return activeTiers.has(store.tier);
 }
 

@@ -111,18 +111,6 @@ export const AudienceMetrics: React.FC = () => {
             <span className="text-dark-400">FF Sales</span>
             <span>${totalProductSales.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-dark-400">Hispanic sales</span>
-            <span>$0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-dark-400">Con gusto Sales</span>
-            <span>$0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-dark-400">GrabNGo sales</span>
-            <span>$0</span>
-          </div>
         </div>
       </motion.div>
     </motion.div>

@@ -6,8 +6,9 @@ export interface StoreData {
   latitude: number;
   longitude: number;
   sales: number;
+  sales_52w: number;
+  velocity_ty_cv: number;
   campoverde_sales: number;
-  velocity_ly: number;
   customers: number;
   reviews: number;
   positive: number;
@@ -17,6 +18,7 @@ export interface StoreData {
   tier: TierType;
   'Qty TY': number;
   'Qty LY': number;
+  total_sales: number;
   socialMedia: {
     facebook: number;
     instagram: number;
