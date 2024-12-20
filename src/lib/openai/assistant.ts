@@ -1,11 +1,12 @@
-import { openai } from './client';
+import { getOpenAIClient } from './client';
 import { OPENAI_CONFIG } from './config';
-import type { AssistantResponse, AssistantError } from './types';
+import type { AssistantResponse } from './types';
 
 async function pollRunStatus(threadId: string, runId: string): Promise<void> {
+  const openai = getOpenAIClient();
   let attempts = 0;
   
-  while (true) {
+  while (attempts < OPENAI_CONFIG.maxRetries) {
     const runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
     
     if (runStatus.status === 'completed') {
@@ -16,21 +17,17 @@ async function pollRunStatus(threadId: string, runId: string): Promise<void> {
       throw new Error('Assistant failed to process the request');
     }
     
-    if (attempts >= OPENAI_CONFIG.maxRetries) {
-      throw new Error('Maximum polling attempts reached');
-    }
-    
     attempts++;
     await new Promise(resolve => setTimeout(resolve, OPENAI_CONFIG.pollingInterval));
   }
+  
+  throw new Error('Maximum polling attempts reached');
 }
 
 export async function getChatResponse(message: string): Promise<AssistantResponse> {
-  if (!OPENAI_CONFIG.apiKey) {
-    throw new Error('OpenAI API key is not configured');
-  }
-
   try {
+    const openai = getOpenAIClient();
+
     // Create a new thread
     const thread = await openai.beta.threads.create();
 

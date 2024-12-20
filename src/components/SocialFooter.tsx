@@ -1,27 +1,26 @@
 import React from 'react';
-import { Building2, Package, Share2 } from 'lucide-react';
+import { Building2, Package, Share2, BarChart } from 'lucide-react';
 import { useStoreData } from '../hooks/useStoreData';
 import { useProductKPIs } from '../hooks/useProductKPIs';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useSummaryModals } from '../contexts/SummaryModalsContext';
 
 export const SocialFooter: React.FC = () => {
-  const { allStores } = useStoreData(); // Use allStores instead of stores
+  const { allStores } = useStoreData();
   const { products } = useProductKPIs();
-  
-  const totalLocations = allStores.length;
-  const totalProducts = products.length;
+  const { isVisible, setIsVisible } = useSummaryModals();
 
   const metrics = [
     { 
       icon: Building2,
       label: 'Total Stores',
-      value: 3010,
+      value: allStores.length.toLocaleString(),
       color: '#00FF9C'
     },
     { 
       icon: Package,
       label: 'Products Tracked',
-      value: totalProducts.toLocaleString(),
+      value: products.length.toLocaleString(),
       color: '#00FF9C'
     },
     {
@@ -47,21 +46,24 @@ export const SocialFooter: React.FC = () => {
                   className="w-5 h-5" 
                   style={{ color: metric.color }} 
                 />
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${metric.label}-${metric.value}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                  >
-                    <p className="text-sm text-dark-400">{metric.label}</p>
-                    <p className="text-sm font-medium">{metric.value}</p>
-                  </motion.div>
-                </AnimatePresence>
+                <div>
+                  <p className="text-sm text-dark-400">{metric.label}</p>
+                  <p className="text-sm font-medium">{metric.value}</p>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
+
+        <motion.button
+          onClick={() => setIsVisible(!isVisible)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-4 py-2 bg-[#00FF9C] text-dark-950 rounded-lg hover:bg-[#00FF9C]/90 transition-colors"
+        >
+          <BarChart className="w-4 h-4" />
+          <span className="font-medium">Main KPIs</span>
+        </motion.button>
       </div>
     </div>
   );

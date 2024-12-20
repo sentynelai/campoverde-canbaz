@@ -8,22 +8,23 @@ import { useStoreData } from '../hooks/useStoreData';
 import { LoadingTooltip } from './LoadingTooltip';
 import { ErrorModal } from './ErrorModal';
 import { useMapReset } from '../hooks/useMapReset';
+import { useRefreshData } from '../hooks/useRefreshData';
 
 export const Header: React.FC = () => {
   const [showAudienceMap, setShowAudienceMap] = React.useState(false);
   const { 
-    refreshData, 
-    lastUpdate, 
-    isLoading, 
-    isRefreshing,
+    lastUpdate,
+    isLoading,
     errorMessage,
     showErrorModal,
     setShowErrorModal
   } = useStoreData();
+  
+  const { refresh, isRefreshing } = useRefreshData();
   const { resetMap } = useMapReset();
 
   const handleRefresh = async () => {
-    await refreshData();
+    await refresh();
   };
 
   return (

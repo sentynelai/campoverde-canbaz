@@ -1,5 +1,5 @@
 import useSWR from 'swr';
-import { fetchStoreData, refreshData } from '../lib/api';
+import { fetchStoreData } from '../lib/api';
 import type { StoreData } from '../types';
 import { atom, useAtom } from 'jotai';
 import { useState, useCallback, useMemo } from 'react';
@@ -10,19 +10,6 @@ export const errorMessageAtom = atom<string | null>(null);
 
 const CACHE_KEY = 'store-data';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-const hasProductSales = (store: StoreData): boolean => {
-  const productSalesFields = [
-    'CV ENERGY BOOST Sales',
-    'CV EXOTIC INDULGENCE Sales',
-    'CV ACAI ENERGIZE PWR Sales',
-    'CV PASSION BLISS Sales',
-    'CV FIT & WELLNESS Sales',
-    'CV CHIA SUPREMACY Sales'
-  ];
-
-  return productSalesFields.some(field => (store[field] || 0) > 0);
-};
 
 export function useStoreData() {
   const [lastUpdate, setLastUpdate] = useAtom(lastUpdateAtom);
@@ -40,15 +27,14 @@ export function useStoreData() {
       errorRetryCount: 3,
       errorRetryInterval: 5000,
       dedupingInterval: 60000,
-      fallbackData: { data: [] },
-      suspense: false
+      fallbackData: { data: [] }
     }
   );
 
   // Stores with product sales (for map markers)
   const stores = useMemo(() => {
     const allStores = data?.data || [];
-    return allStores.filter(hasProductSales);
+    return allStores;
   }, [data]);
 
   // All stores (for summary data)
@@ -56,45 +42,37 @@ export function useStoreData() {
     return data?.data || [];
   }, [data]);
 
-  const handleRefreshData = useCallback(async () => {
+  const refreshData = useCallback(async () => {
     try {
       setIsRefreshing(true);
       setErrorMessage(null);
       
-      const success = await refreshData();
-      if (success) {
-        const result = await mutate(undefined, { revalidate: true });
-        
-        if (result?.error) {
-          setErrorMessage(result.error);
-          setShowErrorModal(true);
-        }
-      } else {
-        setErrorMessage('Failed to refresh data');
-        setShowErrorModal(true);
-      }
-      
+      await mutate(undefined, { revalidate: true });
       setLastUpdate(new Date());
+      
+      return true;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to refresh data';
       console.error('Error refreshing data:', message);
       setErrorMessage(message);
       setShowErrorModal(true);
+      return false;
     } finally {
       setIsRefreshing(false);
     }
   }, [mutate, setIsRefreshing, setErrorMessage, setLastUpdate]);
 
   return {
-    stores, // Filtered stores for map
-    allStores, // All stores for summary data
+    stores,
+    allStores,
     isLoading,
     isError: error,
-    refreshData: handleRefreshData,
+    refreshData,
     lastUpdate,
     isRefreshing,
     errorMessage,
     showErrorModal,
-    setShowErrorModal
+    setShowErrorModal,
+    mutate // Export mutate function
   };
 }

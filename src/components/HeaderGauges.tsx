@@ -3,6 +3,9 @@ import { DollarSign, Zap, Share2 } from 'lucide-react';
 import { useStoreSelection } from '../hooks/useStoreSelection';
 import { useStoreData } from '../hooks/useStoreData';
 import { motion } from 'framer-motion';
+import { calculateTotalSales, formatLargeCurrency } from '../utils/sales';
+import { calculateVelocity, getVelocityPercentage } from '../utils/metrics';
+import { calculateTotalDigitalAudience } from '../utils/audience';
 
 export const HeaderGauges: React.FC = () => {
   const { stores, allStores } = useStoreData();
@@ -14,17 +17,20 @@ export const HeaderGauges: React.FC = () => {
     if (!storeList || storeList.length === 0) {
       return {
         sales: 0,
+        velocity: 0,
+        velocityPercentage: 0,
         social: 0
       };
     }
 
-    // Calculate total sales from column 31 (sales_52w)
-    const totalSales = storeList.reduce((acc, store) => acc + (store.sales_52w || 0), 0);
-    const totalSocial = storeList.reduce((acc, store) => acc + (store.digitalAudience || 0), 0);
-
+    const velocity = calculateVelocity(storeList);
+    const totalDigital = calculateTotalDigitalAudience(storeList);
+    
     return {
-      sales: totalSales,
-      social: totalSocial
+      sales: calculateTotalSales(storeList),
+      velocity,
+      velocityPercentage: getVelocityPercentage(velocity),
+      social: totalDigital
     };
   };
 
@@ -33,26 +39,26 @@ export const HeaderGauges: React.FC = () => {
   const gauges = [
     {
       label: 'Sales',
-      value: `$12.8M`,
+      value: formatLargeCurrency(metrics.sales),
       icon: DollarSign,
       color: '[#00FF9C]',
       gauge: selectedStore && allStores.length > 0 ? 
-        ((selectedStore.sales_52w || 0) / Math.max(...allStores.map(s => s.sales_52w || 0))) * 100 : 100
+        ((selectedStore.sales_52w || 0) / Math.max(...allStores.map(s => parseFloat(s.sales_52w || '0')))) * 100 : 100
     },
     {
       label: 'Velocity',
-      value: '72.7%',
+      value: `$${metrics.velocity.toFixed(2)}`,
       icon: Zap,
       color: 'blue-400',
-      gauge: 72.7
+      gauge: metrics.velocityPercentage
     },
     {
       label: 'Digital',
-      value: `${Math.round(metrics.social / 1000).toLocaleString()}K`,
+      value: `${(metrics.social / 1000000).toFixed(1)}M`,
       icon: Share2,
       color: 'purple-400',
       gauge: selectedStore && allStores.length > 0 ? 
-        ((selectedStore.digitalAudience || 0) / Math.max(...allStores.map(s => s.digitalAudience || 0))) * 100 : 92
+        ((selectedStore.digital_audience || 0) / Math.max(...allStores.map(s => s.digital_audience || 0))) * 100 : 92
     }
   ];
 

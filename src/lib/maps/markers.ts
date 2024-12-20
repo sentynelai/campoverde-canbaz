@@ -25,11 +25,16 @@ export function getMarkerVisibility(store: StoreData, activeTiers: Set<string>):
   if (!isInContinentalUS(store.latitude, store.longitude)) {
     return false;
   }
-  return activeTiers.has(store.tier);
+  
+  // Get the store's tier, defaulting to 'Unknown' if not set
+  const storeTier = store.tier || 'Unknown';
+  return activeTiers.has(storeTier);
 }
 
 export function getMarkerColor(store: StoreData): string {
-  return TIER_COLORS[store.tier] || TIER_COLORS['Unknown'];
+  // Get the store's tier, defaulting to 'Unknown' if not set
+  const storeTier = store.tier || 'Unknown';
+  return TIER_COLORS[storeTier] || TIER_COLORS['Unknown'];
 }
 
 export function updateMarkerAppearance(

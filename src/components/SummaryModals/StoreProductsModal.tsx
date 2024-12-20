@@ -3,6 +3,7 @@ import { Package, X, Leaf, Zap, Coffee, Heart, Apple, Dumbbell } from 'lucide-re
 import { motion } from 'framer-motion';
 import { useStoreData } from '../../hooks/useStoreData';
 import { useSummaryModals } from '../../contexts/SummaryModalsContext';
+import { formatLargeCurrency } from '../../utils/sales';
 
 const PRODUCT_COLUMNS = [
   {
@@ -93,7 +94,7 @@ export const StoreProductsModal: React.FC = () => {
                   </div>
                   <span className="text-dark-200">{product.name}</span>
                 </div>
-                <span className="font-medium">${(product.sales / 1000).toFixed(2)}k</span>
+                <span className="font-medium">{formatLargeCurrency(product.sales)}</span>
               </div>
 
               {/* Progress Bar */}
@@ -116,7 +117,7 @@ export const StoreProductsModal: React.FC = () => {
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-dark-400">$ASW</span>
-                  <span>{(product.sales / 3010 / 52).toFixed(2).replace(/\.?0+$/, '')}</span>
+                  <span>{((product.sales / 3010) / 52).toFixed(2).replace(/\.?0+$/, '')}</span>
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, AlertCircle } from 'lucide-react';
+import { Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { useStoreData } from '../hooks/useStoreData';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -10,11 +11,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { refreshData } = useStoreData();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password === '0000') {
-      onLogin();
+      try {
+        setIsLoading(true);
+        setError(false);
+        
+        // Refresh data before logging in
+        await refreshData();
+        onLogin();
+      } catch (error) {
+        console.error('Error refreshing data:', error);
+        setError(true);
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setError(true);
       setShake(true);
@@ -74,6 +91,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   className={`w-full bg-dark-800/50 border ${
                     error ? 'border-red-500' : 'border-dark-700'
                   } rounded-lg px-4 py-3 focus:outline-none focus:border-[#00FF9C] transition-colors`}
+                  disabled={isLoading}
                 />
               </motion.div>
 
@@ -93,9 +111,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
               <button
                 type="submit"
-                className="w-full mt-6 bg-[#00FF9C] text-dark-950 rounded-lg px-4 py-3 font-medium hover:bg-[#00FF9C]/90 transition-colors"
+                disabled={isLoading}
+                className="w-full mt-6 bg-[#00FF9C] text-dark-950 rounded-lg px-4 py-3 font-medium hover:bg-[#00FF9C]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                Login
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Loading data...</span>
+                  </>
+                ) : (
+                  'Login'
+                )}
               </button>
             </form>
           </div>

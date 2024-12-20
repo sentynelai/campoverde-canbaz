@@ -2,6 +2,7 @@ import React from 'react';
 import { DollarSign, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSummaryModals } from '../../../contexts/SummaryModalsContext';
+import { useStoreData } from '../../../hooks/useStoreData';
 import { SalesProgress } from './SalesProgress';
 import { UnitsMetrics } from './UnitsMetrics';
 import { DistributionMetrics } from './DistributionMetrics';
@@ -10,8 +11,11 @@ import { TiersMetrics } from './TiersMetrics';
 
 export const TotalSalesModal: React.FC = () => {
   const { setIsVisible } = useSummaryModals();
-  const currentSales = 12300000; // $12.3M
-  const targetSales = 11000000; // $11M
+  const { allStores } = useStoreData();
+
+  // Calculate total sales from all stores
+  const currentSales = allStores.reduce((total, store) => total + (store.campoverde_sales || 0), 0);
+  const targetSales = 11000000; // $11M target
 
   return (
     <motion.div

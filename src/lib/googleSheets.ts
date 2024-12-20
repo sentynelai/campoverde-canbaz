@@ -2,7 +2,7 @@ import { GoogleSpreadsheet } from 'google-spreadsheet';
 import type { StoreData } from '../types';
 
 const SPREADSHEET_ID = '1yWXM53omNjeNQaVfb3vyodvTVUOldEhKkcTZrvmlWjM';
-const SHEET_ID = '0'; // Updated to the correct sheet ID
+const SHEET_ID = '284679544'; // Updated to the correct sheet ID
 
 let cachedData: StoreData[] | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes

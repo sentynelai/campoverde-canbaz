@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DollarSign, Target } from 'lucide-react';
+import { formatCurrency } from '../../../utils/formatters';
 
 interface SalesProgressProps {
   currentSales: number;
@@ -23,7 +24,7 @@ export const SalesProgress: React.FC<SalesProgressProps> = ({ currentSales, targ
               </div>
               <span className="text-dark-200">Total CV sales</span>
             </div>
-            <span className="font-medium">$12.3M</span>
+            <span className="font-medium">{formatCurrency(currentSales)}</span>
           </div>
         </div>
 
@@ -35,7 +36,7 @@ export const SalesProgress: React.FC<SalesProgressProps> = ({ currentSales, targ
               </div>
               <span className="text-dark-200">Sales goal</span>
             </div>
-            <span className="font-medium">$11M</span>
+            <span className="font-medium">{formatCurrency(targetSales)}</span>
           </div>
         </div>
       </div>
